@@ -1,0 +1,919 @@
+//
+//  ADUser.swift
+//  nomad-ad
+//
+//  Created by Joel Rennich on 9/9/17.
+//  Copyright © 2017 Joel Rennich. All rights reserved.
+//
+
+import Foundation
+import NoMADPRIVATE
+
+// silly bit of redirection to import ObjC files
+
+public protocol ADUserSession {
+    func authenticate(authTestOnly: Bool)
+    func changePassword(oldPassword: String, newPassword: String)
+    func userInfo()
+    var delegate: ADUserSessionDelegate? { get set }
+    var state: NoMADSessionState { get }
+}
+
+public protocol ADUserSessionDelegate: class {
+    func AuthenticationSucceded()
+    func AuthenticationFailed(error: Error, description: String)
+    func UserInformation(user: NoMADUserRecord)
+}
+
+public enum NoMADSessionState {
+    case success
+    case offDomain
+    case siteFailure
+    case networkLookup
+    case passwordChangeRequired
+    case unset
+    case lookupError
+    case kerbError
+}
+
+public enum NoMADSessionError: Error {
+    case OffDomain
+    case UnAuthenticated
+    case SiteError
+    case StateError
+    case AuthenticationFailure
+    case KerbError
+}
+
+private struct LDAPServer {
+    var host: String
+    var status: String
+    var priority: Int
+    var weight: Int
+    var timeStamp: Date
+}
+
+public enum LDAPType {
+    case AD
+    case OD
+}
+
+// bitwise convenience
+prefix operator ~~
+
+prefix func ~~(value: Int) -> Bool {
+    return (value > 0) ? true : false
+}
+
+// MARK: Start of public class
+
+public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
+    
+    // varibles
+    
+    public var state: NoMADSessionState = .unset           // current state of affairs
+    weak public var delegate: ADUserSessionDelegate?        // delegate
+    public var site: String = ""                            // current AD site
+    public var defaultNamingContext: String = ""            // current default naming context
+    private var hosts = [LDAPServer]()                      // list of LDAP servers
+    private var resolver: DNSResolver;                      // DNS resolver object
+    private var maxSSF = ""                                 // current security level in place for LDAP lookups
+    private var URIPrefix = "ldap://"                       // LDAP or LDAPS
+    
+    private var current = 0                                 // current LDAP server from hosts
+    
+    
+    // Base configuration prefs
+    // change these on the object as needed
+    
+    public var domain: String = ""                  // current LDAP Domain - can be set with init
+    public var kerberosRealm: String = ""           // Kerberos realm
+    
+    public var siteIgnore: Bool = false             // ignore site lookup?
+    public var siteForce: Bool = false              // force a site?
+    public var siteForceSite: String = ""           // what site to force
+    
+    public var ldaptype: LDAPType = .AD             // Type of LDAP server
+    public var port: Int = 389                      // LDAP port typically either 389 or 636
+    public var anonymous: Bool = false              // Anonymous LDAP lookup
+    public var useSSL: Bool = false                 // Toggle SSL
+    
+    public var recursiveGroupLookup : Bool = false  // Toggle recursive group lookup
+    
+    // User
+    
+    public var userPrincipal: String = ""           // Full user principal
+    public var userPrincipalShort: String = ""      // user shortname - necessary for any lookups to happen
+    public var userRecord: NoMADUserRecord? = nil        // ADUserRecordObject containing all user information
+    public var userPass: String = ""
+    
+    // init
+    
+    override init() {
+        self.resolver = DNSResolver.init()
+        self.state = .offDomain
+    }
+    
+    // conv. init with domain and user
+    
+    init(domain: String, user: String, type: LDAPType = .AD) {
+        
+        self.resolver = DNSResolver.init()
+        
+        // configuration parts
+        
+        self.domain = domain
+        self.userPrincipalShort = user.components(separatedBy: "@").first!
+        self.userPrincipal = user
+        self.kerberosRealm = user.components(separatedBy: "@").last!.uppercased()
+        self.ldaptype = type
+        self.state = .offDomain
+    }
+    
+    // MARK: Public functions
+    
+    public func userInfo() {
+        
+        // set state to offDomain on start
+        
+        state = .offDomain
+        
+        // check for valid ticket
+        
+        klistUtil.defaultRealm = kerberosRealm
+        klistUtil.klist()
+        
+        if !klistUtil.state && !anonymous {
+            
+            // no ticket for realm
+            
+            delegate?.AuthenticationFailed(error: NoMADSessionError.UnAuthenticated, description: "No ticket for Kerberos realm \(kerberosRealm)")
+            return
+            
+        }
+        
+        // now some setup
+        
+        if useSSL {
+            URIPrefix = "ldaps://"
+            port = 636
+            maxSSF = "-O maxssf=0 "
+        }
+        
+        // check for connectivity and site
+        
+        getHosts(domain)
+        
+        // if no LDAP servers, we're off the domain so bail
+        
+        if hosts.count == 0 {
+            
+            var errorMessage = "No LDAP servers can be reached."
+            
+            switch ldaptype {
+            case .AD: errorMessage = "No AD Domain Controllers can be reached."
+            case .OD: errorMessage = "No Open Directory servers can be reached."
+            default: errorMessage = "No LDAP servers can be reached."
+            }
+            
+            delegate?.AuthenticationFailed(error: NoMADSessionError.OffDomain, description: errorMessage)
+            return
+        }
+        
+        // Now for the LDAP Ping to find the correct site
+        
+        if ldaptype == .AD {
+            
+            findSite()
+            
+            // check for errors
+            
+            if state != .success {
+                delegate?.AuthenticationFailed(error: NoMADSessionError.SiteError, description: "Unable to determine correct site.")
+                return
+            }
+        }
+        
+        testHosts()
+        
+        getUserInformation()
+        
+        
+    }
+    
+    public func changePassword(oldPassword: String, newPassword: String) {
+        // change user's password
+    }
+    
+    // function to authenticate a user via Kerberos
+    // if only looking to test the password, and not get a ticket, pass (authTestOnly: false)
+    // note this will kill any pre-existing tickets for this user as well
+    
+    public func authenticate(authTestOnly: Bool=false) {
+        // authenticate
+        
+        let kerbUtil = KerbUtil()
+        
+        let kerbError = kerbUtil.getKerbCredentials(userPass, userPrincipal)
+        
+        // wait for auth to finish
+        
+        while !kerbUtil.finished {
+            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+        }
+        
+        // scrub the password field
+        
+        userPass = ""
+        
+        if kerbError != "" {
+            // error
+            state = .kerbError
+            delegate?.AuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError!)
+        } else {
+            
+            if authTestOnly {
+                klistUtil.kdestroy(princ: userPrincipal)
+            }
+            
+            delegate?.AuthenticationSucceded()
+        }
+        
+    }
+    
+    // conv functions
+    
+    // Return the current server
+    
+    var currentServer: String {
+        if state != .offDomain {
+            return hosts[current].host
+        } else {
+            return ""
+        }
+    }
+    
+    // MARK: DNS Main
+    
+    func getSRVRecords(_ domain: String, srv_type: String="_ldap._tcp.") -> [String] {
+        self.resolver.queryType = "SRV"
+        
+        self.resolver.queryValue = srv_type + domain
+        if (site != "" && !srv_type.contains("_kpasswd")) {
+            self.resolver.queryValue = srv_type + site + "._sites." + domain
+        }
+        var results = [String]()
+        
+        myLogger.logit(.debug, message: "Starting DNS query for SRV records.")
+        
+        self.resolver.startQuery()
+        
+        while ( !self.resolver.finished ) {
+            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+        }
+        
+        if (self.resolver.error == nil) {
+            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
+            let records = self.resolver.queryResults as! [[String:AnyObject]]
+            for record: Dictionary in records {
+                let host = record["target"] as! String
+                results.append(host)
+            }
+            
+        } else {
+            myLogger.logit(.debug, message: "Query Error: " + self.resolver.error.localizedDescription)
+        }
+        return results
+    }
+    
+    fileprivate func getHosts(_ domain: String ) {
+        
+        self.resolver.queryType = "SRV"
+        
+        self.resolver.queryValue = "_ldap._tcp." + domain
+        if (self.site != "") {
+            self.resolver.queryValue = "_ldap._tcp." + self.site + "._sites." + domain
+        }
+        
+        // check for a query already running
+        
+        myLogger.logit(.debug, message: "Starting DNS query for SRV records.")
+        
+        self.resolver.startQuery()
+        
+        while ( !self.resolver.finished ) {
+            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+            myLogger.logit(.debug, message: "Waiting for DNS query to return.")
+        }
+        
+        if (self.resolver.error == nil) {
+            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
+            
+            var newHosts = [LDAPServer]()
+            let records = self.resolver.queryResults as! [[String:AnyObject]]
+            for record: Dictionary in records {
+                let host = record["target"] as! String
+                let priority = record["priority"] as! Int
+                let weight = record["weight"] as! Int
+                // let port = record["port"] as! Int
+                let currentServer = LDAPServer(host: host, status: "found", priority: priority, weight: weight, timeStamp: Date())
+                newHosts.append(currentServer)
+            }
+            
+            // now to sort them
+            
+            self.hosts = newHosts.sorted { (x, y) -> Bool in
+                return ( x.priority <= y.priority )
+            }
+            state = .success
+            
+        } else {
+            myLogger.logit(.debug, message: "Query Error: " + self.resolver.error.localizedDescription)
+            state = .siteFailure
+            self.hosts.removeAll()
+        }
+    }
+    
+    fileprivate func testHosts() {
+        if state == .success {
+            for i in 0...( hosts.count - 1) {
+                if hosts[i].status != "dead" {
+                    myLogger.logit(.info, message:"Trying host: " + hosts[i].host)
+                    
+                    // socket test first - this could be falsely negative
+                    // also note that this needs to return stderr
+                    
+                    let mySocketResult = cliTask("/usr/bin/nc -G 5 -z " + hosts[i].host + " " + String(port))
+                    
+                    if mySocketResult.contains("succeeded!") {
+                        
+                        var attribute = "defaultNamingContext"
+                        
+                        // if socket test works, then attempt ldapsearch to get default naming context
+                        
+                        if ldaptype == .OD {
+                            attribute = "namingContexts"
+                        }
+                        
+                        // TODO: THINK ABOUT THIS
+                        //swapPrincipals(false)
+                        
+                        var myLDAPResult = ""
+                        
+                        if anonymous {
+                            myLDAPResult = cliTask("/usr/bin/ldapsearch -N -LLL -x " + maxSSF + "-l 3 -s base -H " + URIPrefix + hosts[i].host + " " + String(port) + " " + attribute)
+                        } else {
+                            myLDAPResult = cliTask("/usr/bin/ldapsearch -N -LLL -Q " + maxSSF + "-l 3 -s base -H " + URIPrefix + hosts[i].host + " " + String(port) + " " + attribute)
+                        }
+                        
+                        // TODO: THINK ABOUT THIS
+                        //swapPrincipals(false)
+                        
+                        if myLDAPResult != "" && !myLDAPResult.contains("GSSAPI Error") && !myLDAPResult.contains("Can't contact") {
+                            let ldifResult = cleanLDIF(myLDAPResult)
+                            if ( ldifResult.count > 0 ) {
+                                defaultNamingContext = getAttributeForSingleRecordFromCleanedLDIF(attribute, ldif: ldifResult)
+                                hosts[i].status = "live"
+                                hosts[i].timeStamp = Date()
+                                myLogger.logit(.base, message:"Current LDAP Server is: " + hosts[i].host )
+                                myLogger.logit(.base, message:"Current default naming context: " + defaultNamingContext )
+                                current = i
+                                break
+                            }
+                        }
+                        // We didn't get an actual LDIF Result... so LDAP isn't working.
+                        myLogger.logit(.info, message:"Server is dead by way of ldap test: " + hosts[i].host)
+                        hosts[i].status = "dead"
+                        hosts[i].timeStamp = Date()
+                        break
+                        
+                    } else {
+                        myLogger.logit(.info, message:"Server is dead by way of socket test: " + hosts[i].host)
+                        hosts[i].status = "dead"
+                        hosts[i].timeStamp = Date()
+                    }
+                }
+            }
+        }
+        
+        guard ( hosts.count > 0 ) else {
+            return
+        }
+        
+        if hosts.last!.status == "dead" {
+            myLogger.logit(.base, message: "All DCs in are dead! You should really fix this.")
+            state = .offDomain
+        } else {
+            state = .networkLookup
+        }
+    }
+    
+    
+    // MARK: DNSResolver Delegate Methods
+    
+    public func dnsResolver(_ resolver: DNSResolver!, didReceiveQueryResult queryResult: [AnyHashable: Any]!) {
+    }
+    
+    public func dnsResolver(_ resolver: DNSResolver!, didStopQueryWithError error: NSError!) {
+    }
+    
+    // MARK: Sites
+    
+    // private function to get the AD site
+    
+    fileprivate func findSite() {
+        // backup the defaultNamingContext so we can restore it at the end.
+        let tempDefaultNamingContext = defaultNamingContext
+        
+        // Setting defaultNamingContext to "" because we're doing a search against the RootDSE
+        defaultNamingContext = ""
+        
+        
+        // For info on LDAP Ping: https://msdn.microsoft.com/en-us/library/cc223811.aspx
+        // For information on the values: https://msdn.microsoft.com/en-us/library/cc223122.aspx
+        let attribute = "netlogon"
+        // not sure if we need: (AAC=\00\00\00\00)
+        let searchTerm = "(&(DnsDomain=\(domain))(NtVer=\\06\\00\\00\\00))" //NETLOGON_NT_VERSION_WITH_CLOSEST_SITE
+        
+        guard let ldifResult = try? getLDAPInformation([attribute], baseSearch: true, searchTerm: searchTerm, test: false, overrideDefaultNamingContext: true) else {
+            myLogger.logit(LogLevel.base, message: "LDAP Query failed.")
+            myLogger.logit(LogLevel.debug, message:"Resetting default naming context to: " + tempDefaultNamingContext)
+            defaultNamingContext = tempDefaultNamingContext
+            return
+        }
+        
+        let ldapPingBase64 = getAttributeForSingleRecordFromCleanedLDIF(attribute, ldif: ldifResult)
+        
+        if ldapPingBase64 == "" {
+            myLogger.logit(LogLevel.base, message: "ldapPingBase64 is empty.")
+            myLogger.logit(LogLevel.debug, message:"Resetting default naming context to: " + tempDefaultNamingContext)
+            defaultNamingContext = tempDefaultNamingContext
+            return
+        }
+        
+        guard let ldapPing: ADLDAPPing = ADLDAPPing(ldapPingBase64String: ldapPingBase64) else {
+            myLogger.logit(LogLevel.debug, message:"Resetting default naming context to: " + tempDefaultNamingContext)
+            defaultNamingContext = tempDefaultNamingContext
+            return
+        }
+        
+        // calculate the site
+        
+        if siteIgnore {
+            site = ""
+            myLogger.logit(LogLevel.debug, message:"Sites being ignored due to preferences.")
+        } else if siteForce {
+            site = siteForceSite
+            myLogger.logit(LogLevel.debug, message:"Site being forced to site set in preferences.")
+        } else {
+            site = ldapPing.clientSite ?? ""
+        }
+        
+        
+        if (ldapPing.flags.contains(.DS_CLOSEST_FLAG)) {
+            myLogger.logit(LogLevel.info, message:"The current server is the closest server.")
+        } else {
+            if ( site != "") {
+                myLogger.logit(LogLevel.info, message:"Site \"\(site)\" found.")
+                myLogger.logit(LogLevel.notice, message: "Looking up DCs for site.")
+                //let domain = currentDomain
+                let currentHosts = hosts
+                getHosts(domain)
+                if (hosts[0].host == "") {
+                    myLogger.logit(LogLevel.base, message: "Site \"\(site)\" has no DCs configured. Ignoring site. You should fix this.")
+                    hosts = currentHosts
+                }
+                testHosts()
+            } else {
+                myLogger.logit(LogLevel.base, message: "Unable to find site")
+            }
+        }
+        myLogger.logit(LogLevel.debug, message:"Resetting default naming context to: " + tempDefaultNamingContext)
+        defaultNamingContext = tempDefaultNamingContext
+    }
+    
+    // MARK: LDAP Retrieval
+    
+    func getLDAPInformation( _ attributes: [String], baseSearch: Bool=false, searchTerm: String="", test: Bool=true, overrideDefaultNamingContext: Bool=false) throws -> [[String:String]] {
+        
+        if test {
+            guard testSocket(self.currentServer) else {
+                throw NoMADSessionError.StateError
+            }
+        }
+        
+        // TODO: We need to un-comment this and figure out another way to pass a valid empty defaultNamingContext
+        if (overrideDefaultNamingContext == false) {
+            if (defaultNamingContext == "") || (defaultNamingContext.contains("GSSAPI Error")) {
+                testHosts()
+            }
+        }
+        
+        // TODO
+        // ensure we're using the right kerberos credential cache
+        //swapPrincipals(false)
+        
+        let command = "/usr/bin/ldapsearch"
+        var arguments: [String] = [String]()
+        arguments.append("-N")
+        if anonymous {
+            arguments.append("-x")
+        } else {
+            arguments.append("-Q")
+        }
+        arguments.append("-LLL")
+        arguments.append("-o")
+        arguments.append("nettimeout=1")
+        arguments.append("-o")
+        arguments.append("ldif-wrap=no")
+        if baseSearch {
+            arguments.append("-s")
+            arguments.append("base")
+        }
+        if maxSSF != "" {
+            arguments.append("-O")
+            arguments.append("maxssf=0")
+        }
+        arguments.append("-H")
+        arguments.append(URIPrefix + self.currentServer)
+        arguments.append("-b")
+        arguments.append(self.defaultNamingContext)
+        if ( searchTerm != "") {
+            arguments.append(searchTerm)
+        }
+        arguments.append(contentsOf: attributes)
+        let ldapResult = cliTask(command, arguments: arguments)
+        
+        if (ldapResult.contains("GSSAPI Error") || ldapResult.contains("Can't contact")) {
+            throw NoMADSessionError.StateError
+        }
+        
+        let myResult = cleanLDIF(ldapResult)
+        
+        // TODO
+        //swapPrincipals(true)
+        
+        return myResult
+    }
+    
+    func getUserInformation() {
+        
+        // some setup
+        
+        var passwordAging = true
+        var tempPasswordSetDate = Date()
+        var serverPasswordExpirationDefault = Double(0)
+        var userPasswordExpireDate = Date()
+        var groups = [String]()
+        var userHome = ""
+        
+        if ldaptype == .AD {
+            
+            let attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            // "maxPwdAge" // passwordExpirationLength
+            
+            let searchTerm = "sAMAccountName=" + userPrincipalShort
+            
+            if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
+                let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
+                let passwordSetDate = ldapResult["pwdLastSet"]
+                let computedExpireDateRaw = ldapResult["msDS-UserPasswordExpiryTimeComputed"]
+                let userPasswordUACFlag = ldapResult["userAccountControl"] ?? ""
+                let userHomeTemp = ldapResult["homeDirectory"] ?? ""
+                let userDisplayName = ldapResult["displayName"] ?? ""
+                var groupsTemp = ldapResult["memberOf"]
+                let userEmail = ldapResult["mail"] ?? ""
+                let UPN = ldapResult["userPrincipalName"] ?? ""
+                let dn = ldapResult["dn"] ?? ""
+                
+                
+                // now to get recursive groups if asked
+                
+                if recursiveGroupLookup {
+                    let attributes = ["name"]
+                    let searchTerm = "(member:1.2.840.113556.1.4.1941:=" + dn.replacingOccurrences(of: "\\", with: "\\\\5c") + ")"
+                    if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
+                        print(ldifResult)
+                        
+                        groupsTemp = ""
+                        for item in ldifResult {
+                            for components in item {
+                                if components.key == "dn" {
+                                    groupsTemp?.append(components.value + ";")
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (passwordSetDate != "") {
+                    tempPasswordSetDate = NSDate(timeIntervalSince1970: (Double(passwordSetDate!)!)/10000000-11644473600) as Date
+                }
+                if ( computedExpireDateRaw != nil) {
+                    // Windows Server 2008 and Newer
+                    if ( Int(computedExpireDateRaw!) == 9223372036854775807) {
+                        
+                        // Password doesn't expire
+                        
+                        passwordAging = false
+                        
+                        // Set expiration to far away from now
+                        
+                        userPasswordExpireDate = Date.distantFuture
+                        
+                    } else if (Int(computedExpireDateRaw!) == 0) {
+                        
+                        // password needs to be reset
+                        
+                        passwordAging = true
+                        
+                        // set expirate to long ago
+                        
+                        userPasswordExpireDate = Date.distantPast
+                        
+                    } else {
+                        // Password expires
+                        
+                        passwordAging = true
+                        
+                        userPasswordExpireDate = NSDate(timeIntervalSince1970: (Double(computedExpireDateRaw!)!)/10000000-11644473600) as Date
+                    }
+                } else {
+                    // Older then Windows Server 2008
+                    // need to go old skool
+                    var passwordExpirationLength: String
+                    let attribute = "maxPwdAge"
+                    
+                    if let ldifResult = try? getLDAPInformation([attribute], baseSearch: true) {
+                        passwordExpirationLength = getAttributeForSingleRecordFromCleanedLDIF(attribute, ldif: ldifResult)
+                    } else {
+                        passwordExpirationLength = ""
+                    }
+                    
+                    if ( passwordExpirationLength.characters.count > 15 ) {
+                        passwordAging = false
+                    } else if ( passwordExpirationLength != "" ) && userPasswordUACFlag != "" {
+                        if ~~( Int(userPasswordUACFlag)! & 0x10000 ) {
+                            passwordAging = false
+                        } else {
+                            serverPasswordExpirationDefault = Double(abs(Int(passwordExpirationLength)!)/10000000)
+                            passwordAging = true
+                        }
+                    } else {
+                        serverPasswordExpirationDefault = Double(0)
+                        passwordAging = false
+                    }
+                    userPasswordExpireDate = tempPasswordSetDate.addingTimeInterval(serverPasswordExpirationDefault)
+                }
+                
+                // clean up groups
+                
+                if groupsTemp != nil {
+                    let groupsArray = groupsTemp!.components(separatedBy: ";")
+                    for group in groupsArray {
+                        let a = group.components(separatedBy: ",")
+                        var b = a[0].replacingOccurrences(of: "CN=", with: "") as String
+                        b = b.replacingOccurrences(of: "cn=", with: "") as String
+                        
+                        if b != "" {
+                            groups.append(b)
+                        }
+                    }
+                    myLogger.logit(.info, message: "You are a member of: " + groups.joined(separator: ", ") )
+                }
+                
+                // clean up the home
+                
+                userHome = userHomeTemp.replacingOccurrences(of: "\\", with: "/")
+                userHome = userHome.replacingOccurrences(of: " ", with: "%20")
+                
+                // pack up user record
+                
+                userRecord = ADUserRecord(firstName: userDisplayName.components(separatedBy: "").first!, lastName: userDisplayName.components(separatedBy: "").last!, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate)
+                
+            } else {
+                myLogger.logit(.base, message: "Unable to find user.")
+            }
+            
+        } else {
+            
+            let attributes = [ "homeDirectory", "displayName", "memberOf", "mail", "uid"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            // "maxPwdAge" // passwordExpirationLength
+            
+            let searchTerm = "uid=" + userPrincipalShort
+            
+            if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
+                let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
+                let userHomeTemp = ldapResult["homeDirectory"] ?? ""
+                let userDisplayName = ldapResult["displayName"] ?? ""
+                let groupsTemp = ldapResult["memberOf"]
+                let userEmail = ldapResult["mail"] ?? ""
+                let UPN = ldapResult["uid"] ?? ""
+            } else {
+                myLogger.logit(.base, message: "Unable to find user.")
+            }
+        }
+        
+        // pack up the user record
+        
+    }
+    
+    // MARK: LDAP cleanup functions
+    
+    fileprivate func cleanLDIF(_ ldif: String) -> [[String:String]] {
+        //var myResult = [[String:String]]()
+        
+        var ldifLines: [String] = ldif.components(separatedBy: CharacterSet.newlines)
+        
+        var records = [[String:String]]()
+        var record = [String:String]()
+        var attributes = Set<String>()
+        
+        for var i in 0..<ldifLines.count {
+            // save current lineIndex
+            let lineIndex = i
+            ldifLines[lineIndex] = ldifLines[lineIndex].trim()
+            
+            // skip version
+            if i == 0 && ldifLines[lineIndex].hasPrefix("version") {
+                continue
+            }
+            
+            if !ldifLines[lineIndex].isEmpty {
+                // fold lines
+                
+                while i+1 < ldifLines.count && ldifLines[i+1].hasPrefix(" ") {
+                    ldifLines[lineIndex] += ldifLines[i+1].trim()
+                    i += 1
+                }
+            } else {
+                // end of record
+                if (record.count > 0) {
+                    records.append(record)
+                }
+                record = [String:String]()
+            }
+            
+            // skip comment
+            if ldifLines[lineIndex].hasPrefix("#") {
+                continue
+            }
+            
+            var attribute = ldifLines[lineIndex].characters.split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+            if attribute.count == 2 {
+                
+                // Get the attribute name (before ;),
+                // then add to attributes array if it doesn't exist.
+                var attributeName = attribute[0].trim()
+                if let index = attributeName.characters.index(of: ";") {
+                    attributeName = attributeName.substring(to: index)
+                }
+                if !attributes.contains(attributeName) {
+                    attributes.insert(attributeName)
+                }
+                
+                // Get the attribute value.
+                // Check if it is a URL (<), or base64 string (:)
+                var attributeValue = attribute[1].trim()
+                // If
+                if attributeValue.hasPrefix("<") {
+                    // url
+                    attributeValue = attributeValue.substring(from: attributeValue.characters.index(after: attributeValue.startIndex)).trim()
+                } else if attributeValue.hasPrefix(":") {
+                    // base64
+                    let tempAttributeValue = attributeValue.substring(from: attributeValue.characters.index(after: attributeValue.startIndex)).trim()
+                    if (Data(base64Encoded: tempAttributeValue, options: NSData.Base64DecodingOptions.init(rawValue: 0)) != nil) {
+                        attributeValue = tempAttributeValue
+                    } else {
+                        attributeValue = ""
+                    }
+                }
+                
+                // escape double quote
+                attributeValue = attributeValue.replacingOccurrences(of: "\"", with: "\"\"")
+                
+                // save attribute value or append it to the existing
+                if let val = record[attributeName] {
+                    //record[attributeName] = "\"" + val.substringWithRange(Range<String.Index>(start: val.startIndex.successor(), end: val.endIndex.predecessor())) + ";" + attributeValue + "\""
+                    record[attributeName] = val + ";" + attributeValue
+                } else {
+                    record[attributeName] = attributeValue
+                }
+            }
+        }
+        // save last record
+        if record.count > 0 {
+            records.append(record)
+        }
+        
+        return records
+    }
+    
+    fileprivate func getAttributeForSingleRecordFromCleanedLDIF(_ attribute: String, ldif: [[String:String]]) -> String {
+        var result: String = ""
+        
+        var foundAttribute = false
+        
+        for record in ldif {
+            for (key, value) in record {
+                if attribute == key {
+                    foundAttribute = true
+                    result = value
+                    break;
+                }
+            }
+            if (foundAttribute == true) {
+                break;
+            }
+        }
+        return result
+    }
+    
+    fileprivate func getAttributesForSingleRecordFromCleanedLDIF(_ attributes: [String], ldif: [[String:String]]) -> [String:String] {
+        var results = [String: String]()
+        
+        var foundAttribute = false
+        for record in ldif {
+            for (key, value) in record {
+                if attributes.contains(key) {
+                    foundAttribute = true
+                    results[key] = value
+                }
+            }
+            if (foundAttribute == true) {
+                break;
+            }
+        }
+        return results
+    }
+    
+    fileprivate func cleanLDAPResultsMultiple(_ result: String, attribute: String) -> String {
+        let lines = result.components(separatedBy: "\n")
+        
+        var myResult = ""
+        
+        for i in lines {
+            if (i.contains(attribute)) {
+                if myResult == "" {
+                    myResult = i.replacingOccurrences( of: attribute + ": ", with: "")
+                } else {
+                    myResult = myResult + (", " + i.replacingOccurrences( of: attribute + ": ", with: ""))
+                }
+            }
+        }
+        return myResult
+    }
+    
+    // private function that uses netcat to create a socket connection to the LDAP server to see if it's reachable.
+    // using ldapsearch for this can take a long time to timeout, this returns much quicker
+    
+    fileprivate func testSocket( _ host: String ) -> Bool {
+        
+        let mySocketResult = cliTask("/usr/bin/nc -G 5 -z " + host + " " + String(port))
+        if mySocketResult.contains("succeeded!") {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    // private function to test for an LDAP defaultNamingContext from the LDAP server
+    // this tests for LDAP connectivity and gets the default naming context at the same time
+    
+    fileprivate func testLDAP ( _ host: String ) -> Bool {
+        
+        var attribute = "defaultNamingContext"
+        
+        // if socket test works, then attempt ldapsearch to get default naming context
+        
+        if ldaptype == .OD {
+            attribute = "namingContexts"
+        }
+        
+        // TODO
+        //swapPrincipals(false)
+        
+        var myLDAPResult = ""
+        
+        if anonymous {
+            myLDAPResult = cliTask("/usr/bin/ldapsearch -N -LLL -x " + maxSSF + "-l 3 -s base -H " + URIPrefix + host + " " + attribute)
+        } else {
+            myLDAPResult = cliTask("/usr/bin/ldapsearch -N -LLL -Q " + maxSSF + "-l 3 -s base -H " + URIPrefix + host + " " + attribute)
+        }
+        
+        // TODO
+        //swapPrincipals(true)
+        
+        if myLDAPResult != "" && !myLDAPResult.contains("GSSAPI Error") && !myLDAPResult.contains("Can't contact") {
+            let ldifResult = cleanLDIF(myLDAPResult)
+            if ( ldifResult.count > 0 ) {
+                defaultNamingContext = getAttributeForSingleRecordFromCleanedLDIF(attribute, ldif: ldifResult)
+                return true
+            }
+        }
+        return false
+    }
+    
+    
+    
+}

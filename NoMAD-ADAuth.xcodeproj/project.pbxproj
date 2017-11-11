@@ -10,6 +10,27 @@
 		1A10FCC71FAEA7B300D30727 /* NoMAD_ADAuth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1A10FCBD1FAEA7B300D30727 /* NoMAD_ADAuth.framework */; };
 		1A10FCCC1FAEA7B300D30727 /* NoMAD_ADAuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A10FCCB1FAEA7B300D30727 /* NoMAD_ADAuthTests.swift */; };
 		1A10FCCE1FAEA7B300D30727 /* NoMAD_ADAuth.h in Headers */ = {isa = PBXBuildFile; fileRef = 1A10FCC01FAEA7B300D30727 /* NoMAD_ADAuth.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1AB3EEED1FB6887C002D5F99 /* ADLDAPPing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEEC1FB6887C002D5F99 /* ADLDAPPing.swift */; };
+		1AB3EEF31FB688A6002D5F99 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF01FB688A6002D5F99 /* Extensions.swift */; };
+		1AB3EEF41FB688A6002D5F99 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF11FB688A6002D5F99 /* Logger.swift */; };
+		1AB3EEF51FB688A6002D5F99 /* NSTaskWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF21FB688A6002D5F99 /* NSTaskWrapper.swift */; };
+		1AB3EEFC1FB688CB002D5F99 /* KerbUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB3EEF71FB688CB002D5F99 /* KerbUtil.h */; };
+		1AB3EEFD1FB688CB002D5F99 /* KlistUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF81FB688CB002D5F99 /* KlistUtil.swift */; };
+		1AB3EEFE1FB688CB002D5F99 /* KerbUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF91FB688CB002D5F99 /* KerbUtil.m */; };
+		1AB3EEFF1FB688CB002D5F99 /* GSSItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB3EEFA1FB688CB002D5F99 /* GSSItem.h */; };
+		1AB3EF001FB688CB002D5F99 /* krb5.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB3EEFB1FB688CB002D5F99 /* krb5.h */; };
+		1AB3EF041FB688E6002D5F99 /* DNSResolver.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB3EF021FB688E6002D5F99 /* DNSResolver.h */; };
+		1AB3EF051FB688E6002D5F99 /* DNSResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF031FB688E6002D5F99 /* DNSResolver.m */; };
+		1AB3EF071FB68904002D5F99 /* UserRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF061FB68904002D5F99 /* UserRecord.swift */; };
+		1AB3EF091FB68922002D5F99 /* NoMADSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF081FB68922002D5F99 /* NoMADSession.swift */; };
+		1AB3EF5E1FB6962A002D5F99 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A10FCCD1FAEA7B300D30727 /* Info.plist */; };
+		1AB3EF5F1FB69637002D5F99 /* GSS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF351FB68C18002D5F99 /* GSS.framework */; };
+		1AB3EF601FB6963B002D5F99 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF361FB68F37002D5F99 /* libresolv.tbd */; };
+		1AB3EF611FB6963D002D5F99 /* Kerberos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF341FB68BC4002D5F99 /* Kerberos.framework */; };
+		1AB3EF631FB698CC002D5F99 /* ADUserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF621FB698CC002D5F99 /* ADUserTests.swift */; };
+		1AB3EF6B1FB69CE7002D5F99 /* WindowsCATools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF651FB69A84002D5F99 /* WindowsCATools.swift */; };
+		1AB3EF6C1FB69CED002D5F99 /* CSRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF661FB69A87002D5F99 /* CSRGen.swift */; };
+		1AB3EF701FB69E0D002D5F99 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF6D1FB69DB1002D5F99 /* Security.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +50,31 @@
 		1A10FCC61FAEA7B300D30727 /* NoMAD-ADAuthTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "NoMAD-ADAuthTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1A10FCCB1FAEA7B300D30727 /* NoMAD_ADAuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoMAD_ADAuthTests.swift; sourceTree = "<group>"; };
 		1A10FCCD1FAEA7B300D30727 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1AB3EEEC1FB6887C002D5F99 /* ADLDAPPing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ADLDAPPing.swift; sourceTree = "<group>"; };
+		1AB3EEF01FB688A6002D5F99 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		1AB3EEF11FB688A6002D5F99 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		1AB3EEF21FB688A6002D5F99 /* NSTaskWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSTaskWrapper.swift; sourceTree = "<group>"; };
+		1AB3EEF71FB688CB002D5F99 /* KerbUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KerbUtil.h; sourceTree = "<group>"; };
+		1AB3EEF81FB688CB002D5F99 /* KlistUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KlistUtil.swift; sourceTree = "<group>"; };
+		1AB3EEF91FB688CB002D5F99 /* KerbUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KerbUtil.m; sourceTree = "<group>"; };
+		1AB3EEFA1FB688CB002D5F99 /* GSSItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSSItem.h; sourceTree = "<group>"; };
+		1AB3EEFB1FB688CB002D5F99 /* krb5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = krb5.h; sourceTree = "<group>"; };
+		1AB3EF021FB688E6002D5F99 /* DNSResolver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DNSResolver.h; sourceTree = "<group>"; };
+		1AB3EF031FB688E6002D5F99 /* DNSResolver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DNSResolver.m; sourceTree = "<group>"; };
+		1AB3EF061FB68904002D5F99 /* UserRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRecord.swift; sourceTree = "<group>"; };
+		1AB3EF081FB68922002D5F99 /* NoMADSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoMADSession.swift; sourceTree = "<group>"; };
+		1AB3EF0A1FB689A2002D5F99 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		1AB3EF0B1FB68A23002D5F99 /* NoMADADAuth.private.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = NoMADADAuth.private.modulemap; sourceTree = "<group>"; };
+		1AB3EF301FB68A7D002D5F99 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		1AB3EF311FB68B12002D5F99 /* FRAMEWORK.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FRAMEWORK.md; sourceTree = "<group>"; };
+		1AB3EF341FB68BC4002D5F99 /* Kerberos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Kerberos.framework; path = System/Library/Frameworks/Kerberos.framework; sourceTree = SDKROOT; };
+		1AB3EF351FB68C18002D5F99 /* GSS.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GSS.framework; path = System/Library/Frameworks/GSS.framework; sourceTree = SDKROOT; };
+		1AB3EF361FB68F37002D5F99 /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
+		1AB3EF621FB698CC002D5F99 /* ADUserTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ADUserTests.swift; sourceTree = "<group>"; };
+		1AB3EF651FB69A84002D5F99 /* WindowsCATools.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowsCATools.swift; sourceTree = "<group>"; };
+		1AB3EF661FB69A87002D5F99 /* CSRGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSRGen.swift; sourceTree = "<group>"; };
+		1AB3EF691FB69B09002D5F99 /* libcommonCrypto.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcommonCrypto.tbd; path = usr/lib/system/libcommonCrypto.tbd; sourceTree = SDKROOT; };
+		1AB3EF6D1FB69DB1002D5F99 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +82,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AB3EF701FB69E0D002D5F99 /* Security.framework in Frameworks */,
+				1AB3EF5F1FB69637002D5F99 /* GSS.framework in Frameworks */,
+				1AB3EF601FB6963B002D5F99 /* libresolv.tbd in Frameworks */,
+				1AB3EF611FB6963D002D5F99 /* Kerberos.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,6 +106,7 @@
 				1A10FCBF1FAEA7B300D30727 /* NoMAD-ADAuth */,
 				1A10FCCA1FAEA7B300D30727 /* NoMAD-ADAuthTests */,
 				1A10FCBE1FAEA7B300D30727 /* Products */,
+				1AB3EF321FB68BA9002D5F99 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -71,8 +122,18 @@
 		1A10FCBF1FAEA7B300D30727 /* NoMAD-ADAuth */ = {
 			isa = PBXGroup;
 			children = (
+				1AB3EF641FB69A73002D5F99 /* CSR */,
+				1AB3EF2F1FB68A70002D5F99 /* NoMAD-ADAuthPrivate */,
+				1AB3EF081FB68922002D5F99 /* NoMADSession.swift */,
+				1AB3EF0B1FB68A23002D5F99 /* NoMADADAuth.private.modulemap */,
+				1AB3EF011FB688D8002D5F99 /* DNS */,
+				1AB3EEF61FB688AD002D5F99 /* Kerberos */,
+				1AB3EEEF1FB6889A002D5F99 /* Utility */,
+				1AB3EEEB1FB68870002D5F99 /* LDAP */,
 				1A10FCC01FAEA7B300D30727 /* NoMAD_ADAuth.h */,
 				1A10FCC11FAEA7B300D30727 /* Info.plist */,
+				1AB3EF0A1FB689A2002D5F99 /* README.md */,
+				1AB3EF311FB68B12002D5F99 /* FRAMEWORK.md */,
 			);
 			path = "NoMAD-ADAuth";
 			sourceTree = "<group>";
@@ -81,9 +142,79 @@
 			isa = PBXGroup;
 			children = (
 				1A10FCCB1FAEA7B300D30727 /* NoMAD_ADAuthTests.swift */,
+				1AB3EF621FB698CC002D5F99 /* ADUserTests.swift */,
 				1A10FCCD1FAEA7B300D30727 /* Info.plist */,
 			);
 			path = "NoMAD-ADAuthTests";
+			sourceTree = "<group>";
+		};
+		1AB3EEEB1FB68870002D5F99 /* LDAP */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EEEC1FB6887C002D5F99 /* ADLDAPPing.swift */,
+			);
+			name = LDAP;
+			sourceTree = "<group>";
+		};
+		1AB3EEEF1FB6889A002D5F99 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EF061FB68904002D5F99 /* UserRecord.swift */,
+				1AB3EEF01FB688A6002D5F99 /* Extensions.swift */,
+				1AB3EEF11FB688A6002D5F99 /* Logger.swift */,
+				1AB3EEF21FB688A6002D5F99 /* NSTaskWrapper.swift */,
+			);
+			name = Utility;
+			sourceTree = "<group>";
+		};
+		1AB3EEF61FB688AD002D5F99 /* Kerberos */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EEFB1FB688CB002D5F99 /* krb5.h */,
+				1AB3EEF81FB688CB002D5F99 /* KlistUtil.swift */,
+				1AB3EEFA1FB688CB002D5F99 /* GSSItem.h */,
+				1AB3EEF71FB688CB002D5F99 /* KerbUtil.h */,
+				1AB3EEF91FB688CB002D5F99 /* KerbUtil.m */,
+			);
+			name = Kerberos;
+			sourceTree = "<group>";
+		};
+		1AB3EF011FB688D8002D5F99 /* DNS */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EF021FB688E6002D5F99 /* DNSResolver.h */,
+				1AB3EF031FB688E6002D5F99 /* DNSResolver.m */,
+			);
+			name = DNS;
+			sourceTree = "<group>";
+		};
+		1AB3EF2F1FB68A70002D5F99 /* NoMAD-ADAuthPrivate */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EF301FB68A7D002D5F99 /* module.modulemap */,
+			);
+			name = "NoMAD-ADAuthPrivate";
+			sourceTree = "<group>";
+		};
+		1AB3EF321FB68BA9002D5F99 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EF6D1FB69DB1002D5F99 /* Security.framework */,
+				1AB3EF691FB69B09002D5F99 /* libcommonCrypto.tbd */,
+				1AB3EF361FB68F37002D5F99 /* libresolv.tbd */,
+				1AB3EF351FB68C18002D5F99 /* GSS.framework */,
+				1AB3EF341FB68BC4002D5F99 /* Kerberos.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		1AB3EF641FB69A73002D5F99 /* CSR */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EF661FB69A87002D5F99 /* CSRGen.swift */,
+				1AB3EF651FB69A84002D5F99 /* WindowsCATools.swift */,
+			);
+			name = CSR;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -93,7 +224,11 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AB3EF001FB688CB002D5F99 /* krb5.h in Headers */,
+				1AB3EF041FB688E6002D5F99 /* DNSResolver.h in Headers */,
+				1AB3EEFC1FB688CB002D5F99 /* KerbUtil.h in Headers */,
 				1A10FCCE1FAEA7B300D30727 /* NoMAD_ADAuth.h in Headers */,
+				1AB3EEFF1FB688CB002D5F99 /* GSSItem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +283,7 @@
 				TargetAttributes = {
 					1A10FCBC1FAEA7B300D30727 = {
 						CreatedOnToolsVersion = 9.1;
+						LastSwiftMigration = 0910;
 						ProvisioningStyle = Automatic;
 					};
 					1A10FCC51FAEA7B300D30727 = {
@@ -179,6 +315,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AB3EF5E1FB6962A002D5F99 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -196,6 +333,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AB3EF6C1FB69CED002D5F99 /* CSRGen.swift in Sources */,
+				1AB3EEED1FB6887C002D5F99 /* ADLDAPPing.swift in Sources */,
+				1AB3EF071FB68904002D5F99 /* UserRecord.swift in Sources */,
+				1AB3EEF41FB688A6002D5F99 /* Logger.swift in Sources */,
+				1AB3EEF31FB688A6002D5F99 /* Extensions.swift in Sources */,
+				1AB3EF051FB688E6002D5F99 /* DNSResolver.m in Sources */,
+				1AB3EF6B1FB69CE7002D5F99 /* WindowsCATools.swift in Sources */,
+				1AB3EEFE1FB688CB002D5F99 /* KerbUtil.m in Sources */,
+				1AB3EF091FB68922002D5F99 /* NoMADSession.swift in Sources */,
+				1AB3EEFD1FB688CB002D5F99 /* KlistUtil.swift in Sources */,
+				1AB3EEF51FB688A6002D5F99 /* NSTaskWrapper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,6 +352,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A10FCCC1FAEA7B300D30727 /* NoMAD_ADAuthTests.swift in Sources */,
+				1AB3EF631FB698CC002D5F99 /* ADUserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,7 +416,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -321,7 +470,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -333,6 +482,7 @@
 		1A10FCD21FAEA7B300D30727 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -345,9 +495,17 @@
 				INFOPLIST_FILE = "NoMAD-ADAuth/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MODULEMAP_PRIVATE_FILE = "$(SRCROOT)/NoMAD-ADAuth/NoMADADAuth.private.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuth";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -355,6 +513,7 @@
 		1A10FCD31FAEA7B300D30727 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -367,9 +526,16 @@
 				INFOPLIST_FILE = "NoMAD-ADAuth/Info.plist";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MODULEMAP_PRIVATE_FILE = "$(SRCROOT)/NoMAD-ADAuth/NoMADADAuth.private.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuth";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth";
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
@@ -377,6 +543,7 @@
 		1A10FCD51FAEA7B300D30727 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VRPY9KHGX6;
@@ -391,6 +558,7 @@
 		1A10FCD61FAEA7B300D30727 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VRPY9KHGX6;
