@@ -14,6 +14,8 @@ Make sure included Frameworks have the current project as a target
 
 Clean the project regularly
 
+In the build settings make sure to Always Embed Swift Standard Libraries
+
 * To Do
 
 1. Figure out adding CommonCrypto to allow for CSR Generation
