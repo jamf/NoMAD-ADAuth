@@ -8,6 +8,13 @@
 
 import Foundation
 
+// bitwise convenience
+prefix operator ~~
+
+prefix func ~~(value: Int) -> Bool {
+    return (value > 0) ? true : false
+}
+
 extension UserDefaults {
     func sint(forKey defaultName: String) -> Int? {
         

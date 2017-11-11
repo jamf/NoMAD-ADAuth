@@ -23,7 +23,9 @@ public protocol NoMADUserRecord {
 }
 
 public struct ADUserRecord: NoMADUserRecord, Equatable {
+    
     public let type : LDAPType = .AD
+    public var userPrincipal : String
     public var firstName: String
     public var lastName: String
     public var fullName: String
@@ -37,6 +39,8 @@ public struct ADUserRecord: NoMADUserRecord, Equatable {
     public var uacFlags: Int?
     public var passwordAging: Bool?
     public var computedExireDate: Date?
+    public var updatedLast: Date
+    public var domain: String
     
     public static func ==(lhs: ADUserRecord, rhs: ADUserRecord) -> Bool {
         return (lhs.firstName == rhs.firstName && lhs.lastName == rhs.lastName)

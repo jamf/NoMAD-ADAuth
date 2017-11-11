@@ -30,13 +30,11 @@ class KlistUtil {
     
     var dateFormatter = DateFormatter()
     var tickets = [String:Ticket]()
-
-    var state = true
+    // var tempDict = [String:Ticket]()
+    
     
     var defaultPrincipal: String?
     var defaultExpires: Date?
-    
-    var defaultRealm = ""
     
     init() {
         dateFormatter.dateFormat = "yyyyMMddHHmmss"
@@ -62,7 +60,6 @@ class KlistUtil {
     func returnPrincipals() -> [String] {
         klist()
         return tickets.keys.sorted()
-        
     }
     
     // convenience function to return default principal
@@ -72,11 +69,8 @@ class KlistUtil {
     }
     
     func returnDefaultExpiration() -> Date? {
-        return defaultExpires ?? Date.distantPast
+        return defaultExpires
     }
-    
-    
-    // function to update all tickets
     
     func klist() {
         
@@ -134,7 +128,7 @@ class KlistUtil {
                 let name = GSSCredentialCopyName(cred!)
                 if name != nil {
                     let displayName = GSSNameCreateDisplayString(name!)!
-                    let displayNameString = String(describing: displayName.takeRetainedValue()) 
+                    let displayNameString = String(describing: displayName.takeRetainedValue()) as! String
                     print(displayNameString)
                     let lifetime = GSSCredentialGetLifetime(cred!)
                     let expiretime = Date().addingTimeInterval(TimeInterval(lifetime))
@@ -167,24 +161,7 @@ class KlistUtil {
                 tickets[tick.value.principal] = tick.value
             }
         }
-        
-        // set state
-        
-        if tickets.count > 0 {
-            let realm = defaultRealm
-            myLogger.logit(.debug, message:"Looking for tickets using realm: " + realm )
-            for ticket in tickets {
-                let name = ticket.key
-                if name.contains("@" + realm ) {
-                    state = true
-                    continue
-                } else {
-                    state = false
-                }
-            }
-        } else {
-            state = false
-        }
+        //print(tickets)
     }
     
     // function to delete a kerb ticket

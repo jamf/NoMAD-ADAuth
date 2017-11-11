@@ -10,20 +10,25 @@ import Foundation
 import XCTest
 @testable import NoMAD_ADAuth
 
-class ADUserTests : XCTestCase {
+class ADUserTests : XCTestCase, NoMADUserSessionDelegate {
     
     // some setup
     
-    let session = NoMADSession.init(domain: "nomad.test", user: "aeng@NOMAD.TEST", type: .AD)
+    let session = NoMADSession.init(domain: "nomad.test", user: "ftest@NOMAD.TEST", type: .AD)
 
+    var expectation: XCTestExpectation?
+    
     override func setUp() {
         super.setUp()
     }
     
-    
     func testAuth() {
-        session.userPass = "Apple21!"
+        session.userPass = "NoMADRocks1!"
+        
+        expectation = self.expectation(description: "Auth Succeeded")
+        session.delegate = self
         session.authenticate()
+        self.waitForExpectations(timeout: 10, handler: nil)
     }
 
     func testUserLookup() {
@@ -33,8 +38,29 @@ class ADUserTests : XCTestCase {
     }
     
     func ticketList() {
-        klistUtil.klist()
-        klistUtil.defaultRealm = "NOMAD.TEST"
-        print(klistUtil.state)
+        //klistUtil.defaultRealm = "NOMAD.TEST"
+        //print(klistUtil.state)
+    }
+    
+    // MARK: Delegate
+    
+    func NoMADAuthenticationSucceded() {
+        
+        if expectation?.description == "Auth Succeeded" {
+            print("Auth Succeeded")
+            expectation?.fulfill()
+             session.userInfo()
+        } else {
+            XCTFail()
+        }
+
+    }
+    
+    func NoMADAuthenticationFailed(error: Error, description: String) {
+        print("Auth Failed")
+    }
+    
+    func NoMADUserInformation(user: ADUserRecord) {
+        print(user)
     }
 }

@@ -11,18 +11,18 @@ import NoMADPRIVATE
 
 // silly bit of redirection to import ObjC files
 
-public protocol ADUserSession {
+public protocol NoMADUserSession {
     func authenticate(authTestOnly: Bool)
-    func changePassword(oldPassword: String, newPassword: String)
+    func changePassword()
     func userInfo()
-    var delegate: ADUserSessionDelegate? { get set }
+    var delegate: NoMADUserSessionDelegate? { get set }
     var state: NoMADSessionState { get }
 }
 
-public protocol ADUserSessionDelegate: class {
-    func AuthenticationSucceded()
-    func AuthenticationFailed(error: Error, description: String)
-    func UserInformation(user: NoMADUserRecord)
+public protocol NoMADUserSessionDelegate: class {
+    func NoMADAuthenticationSucceded()
+    func NoMADAuthenticationFailed(error: Error, description: String)
+    func NoMADUserInformation(user: ADUserRecord)
 }
 
 public enum NoMADSessionState {
@@ -45,7 +45,12 @@ public enum NoMADSessionError: Error {
     case KerbError
 }
 
-private struct LDAPServer {
+public enum LDAPType {
+    case AD
+    case OD
+}
+
+public struct NoMADLDAPServer {
     var host: String
     var status: String
     var priority: Int
@@ -53,34 +58,23 @@ private struct LDAPServer {
     var timeStamp: Date
 }
 
-public enum LDAPType {
-    case AD
-    case OD
-}
-
-// bitwise convenience
-prefix operator ~~
-
-prefix func ~~(value: Int) -> Bool {
-    return (value > 0) ? true : false
-}
-
 // MARK: Start of public class
 
-public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
+public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
     
     // varibles
     
-    public var state: NoMADSessionState = .unset           // current state of affairs
-    weak public var delegate: ADUserSessionDelegate?        // delegate
+    public var state: NoMADSessionState = .unset            // current state of affairs
+    weak public var delegate: NoMADUserSessionDelegate?     // delegate
     public var site: String = ""                            // current AD site
     public var defaultNamingContext: String = ""            // current default naming context
-    private var hosts = [LDAPServer]()                      // list of LDAP servers
+    private var hosts = [NoMADLDAPServer]()                      // list of LDAP servers
     private var resolver: DNSResolver;                      // DNS resolver object
     private var maxSSF = ""                                 // current security level in place for LDAP lookups
     private var URIPrefix = "ldap://"                       // LDAP or LDAPS
     
     private var current = 0                                 // current LDAP server from hosts
+    public var home = ""                                    // current active user home
     
     
     // Base configuration prefs
@@ -104,30 +98,41 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
     
     public var userPrincipal: String = ""           // Full user principal
     public var userPrincipalShort: String = ""      // user shortname - necessary for any lookups to happen
-    public var userRecord: NoMADUserRecord? = nil        // ADUserRecordObject containing all user information
-    public var userPass: String = ""
+    public var userRecord: ADUserRecord? = nil      // ADUserRecordObject containing all user information
+    public var userPass: String = ""                // for auth
+    public var oldPass: String = ""                 // for password changes
+    public var newPass: String = ""                 // for password changes
     
     // init
     
-    override init() {
+    public override init() {
         self.resolver = DNSResolver.init()
         self.state = .offDomain
     }
     
     // conv. init with domain and user
     
-    init(domain: String, user: String, type: LDAPType = .AD) {
+    public init(domain: String, user: String, type: LDAPType = .AD) {
         
         self.resolver = DNSResolver.init()
         
         // configuration parts
         
         self.domain = domain
-        self.userPrincipalShort = user.components(separatedBy: "@").first!
-        self.userPrincipal = user
-        self.kerberosRealm = user.components(separatedBy: "@").last!.uppercased()
         self.ldaptype = type
         self.state = .offDomain
+        
+        // check for the REALM
+        
+        if user.contains("@") {
+            self.userPrincipalShort = user.components(separatedBy: "@").first!
+            self.kerberosRealm = user.components(separatedBy: "@").last!.uppercased()
+            self.userPrincipal = user
+        } else {
+            self.userPrincipalShort = user
+            self.kerberosRealm = domain.uppercased()
+            self.userPrincipal = user + "@\(self.kerberosRealm)"
+        }
     }
     
     // MARK: Public functions
@@ -140,14 +145,13 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
         
         // check for valid ticket
         
-        klistUtil.defaultRealm = kerberosRealm
         klistUtil.klist()
         
-        if !klistUtil.state && !anonymous {
+        if !klistUtil.returnDefaultPrincipal().contains(kerberosRealm) && !anonymous {
             
             // no ticket for realm
             
-            delegate?.AuthenticationFailed(error: NoMADSessionError.UnAuthenticated, description: "No ticket for Kerberos realm \(kerberosRealm)")
+            delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.UnAuthenticated, description: "No ticket for Kerberos realm \(kerberosRealm)")
             return
             
         }
@@ -160,9 +164,21 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
             maxSSF = "-O maxssf=0 "
         }
         
+        var lookupSite = true
+        
         // check for connectivity and site
         
-        getHosts(domain)
+        if let server = siteManager.sites[domain] {
+            // we have an existing server, let's use it
+            lookupSite = false
+            hosts = server
+        }
+        
+        if lookupSite {
+            getHosts(domain)
+        } else {
+            state = .success
+        }
         
         // if no LDAP servers, we're off the domain so bail
         
@@ -176,33 +192,72 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
             default: errorMessage = "No LDAP servers can be reached."
             }
             
-            delegate?.AuthenticationFailed(error: NoMADSessionError.OffDomain, description: errorMessage)
+            delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.OffDomain, description: errorMessage)
             return
         }
         
         // Now for the LDAP Ping to find the correct site
         
-        if ldaptype == .AD {
+        if ldaptype == .AD && lookupSite  {
             
             findSite()
             
             // check for errors
             
             if state != .success {
-                delegate?.AuthenticationFailed(error: NoMADSessionError.SiteError, description: "Unable to determine correct site.")
+                delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.SiteError, description: "Unable to determine correct site.")
                 return
             }
         }
         
         testHosts()
         
+        if lookupSite {
+            // write found server back to site manager
+            
+            siteManager.sites[domain] = hosts
+        }
+        
         getUserInformation()
         
+        // return the userRecord unless we came back empty
+        
+        if userRecord != nil {
+            delegate?.NoMADUserInformation(user: userRecord!)
+        }
         
     }
     
-    public func changePassword(oldPassword: String, newPassword: String) {
+    public func changePassword() {
         // change user's password
+        
+        // check kerb prefs
+        
+        checkKpasswdServer()
+        
+        // set up the KerbUtil
+        
+        let kerbUtil = KerbUtil()
+        
+        let kerbError = kerbUtil.changeKerbPassword(oldPass, newPass, userPrincipal)
+        
+        while !kerbUtil.finished {
+            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+        }
+        
+        // scrub the passwords
+        
+        oldPass = ""
+        newPass = ""
+        
+        if kerbError != nil {
+            // error
+            state = .kerbError
+            delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError!)
+            
+        } else {
+            delegate?.NoMADAuthenticationSucceded()
+        }
     }
     
     // function to authenticate a user via Kerberos
@@ -226,22 +281,23 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
         
         userPass = ""
         
-        if kerbError != "" {
+        if kerbError != nil {
             // error
             state = .kerbError
-            delegate?.AuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError!)
+            delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError!)
+            
         } else {
             
             if authTestOnly {
                 klistUtil.kdestroy(princ: userPrincipal)
             }
             
-            delegate?.AuthenticationSucceded()
+            delegate?.NoMADAuthenticationSucceded()
         }
         
     }
     
-    // conv functions
+    // MARK: conv functions
     
     // Return the current server
     
@@ -259,6 +315,9 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
         self.resolver.queryType = "SRV"
         
         self.resolver.queryValue = srv_type + domain
+        
+        // TODO: Do we need to exclude _kpasswd?
+        
         if (site != "" && !srv_type.contains("_kpasswd")) {
             self.resolver.queryValue = srv_type + site + "._sites." + domain
         }
@@ -309,14 +368,14 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
         if (self.resolver.error == nil) {
             myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
             
-            var newHosts = [LDAPServer]()
+            var newHosts = [NoMADLDAPServer]()
             let records = self.resolver.queryResults as! [[String:AnyObject]]
             for record: Dictionary in records {
                 let host = record["target"] as! String
                 let priority = record["priority"] as! Int
                 let weight = record["weight"] as! Int
                 // let port = record["port"] as! Int
-                let currentServer = LDAPServer(host: host, status: "found", priority: priority, weight: weight, timeStamp: Date())
+                let currentServer = NoMADLDAPServer(host: host, status: "found", priority: priority, weight: weight, timeStamp: Date())
                 newHosts.append(currentServer)
             }
             
@@ -586,15 +645,16 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
                 let UPN = ldapResult["userPrincipalName"] ?? ""
                 let dn = ldapResult["dn"] ?? ""
                 
+                if ldapResult.count == 0 {
+                    // we didn't get a result
+                }
                 
                 // now to get recursive groups if asked
                 
                 if recursiveGroupLookup {
                     let attributes = ["name"]
                     let searchTerm = "(member:1.2.840.113556.1.4.1941:=" + dn.replacingOccurrences(of: "\\", with: "\\\\5c") + ")"
-                    if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
-                        print(ldifResult)
-                        
+                    if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {                        
                         groupsTemp = ""
                         for item in ldifResult {
                             for components in item {
@@ -606,7 +666,7 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
                     }
                 }
                 
-                if (passwordSetDate != "") {
+                if (passwordSetDate != "") && (passwordSetDate != nil ) {
                     tempPasswordSetDate = NSDate(timeIntervalSince1970: (Double(passwordSetDate!)!)/10000000-11644473600) as Date
                 }
                 if ( computedExpireDateRaw != nil) {
@@ -689,7 +749,7 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
                 
                 // pack up user record
                 
-                userRecord = ADUserRecord(firstName: userDisplayName.components(separatedBy: "").first!, lastName: userDisplayName.components(separatedBy: "").last!, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate)
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: userDisplayName.components(separatedBy: "").first!, lastName: userDisplayName.components(separatedBy: "").last!, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain)
                 
             } else {
                 myLogger.logit(.base, message: "Unable to find user.")
@@ -914,6 +974,63 @@ public class NoMADSession : NSObject, ADUserSession, DNSResolverDelegate {
         return false
     }
     
+    // MARK: Kerberos preference file needs to be updated:
     
-    
+    private func checkKpasswdServer() -> Bool {
+        
+        let myKpasswdServers = getSRVRecords(domain, srv_type: "_kpasswd._tcp.")
+        myLogger.logit(LogLevel.debug, message: "Current Server is: " + currentServer)
+        myLogger.logit(LogLevel.debug, message: "Kpasswd Servers are: " + myKpasswdServers.description)
+        
+        if myKpasswdServers.contains(currentServer) {
+            myLogger.logit(LogLevel.debug, message: "Found kpasswd server that matches current LDAP server.")
+            myLogger.logit(LogLevel.debug, message: "Attempting to set kpasswd server to ensure Kerberos and LDAP are in sync.")
+            
+            // get the defaults for com.apple.Kerberos
+            
+            let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
+            
+            // get the list defaults, or create an empty dictionary if there are none
+            
+            var kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
+            
+            // test to see if the domain_defaults key already exists, if not build it
+            
+            if kerbDefaults["default_realm"] != nil {
+                
+                myLogger.logit(LogLevel.debug, message: "Existing default realm. Skipping adding default realm to Kerberos prefs.")
+                
+            } else {
+                
+                // build a dictionary and add the KDC into it then write it back to defaults
+                let libDefaults = NSMutableDictionary()
+                libDefaults.setValue(kerberosRealm, forKey: "default_realm")
+                kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+            }
+            
+            // get the list of domains, or create an empty dictionary if there are none
+            
+            var kerbRealms = kerbPrefs?.dictionary(forKey: "realms")  ?? [String:AnyObject]()
+            
+            // test to see if the realm already exists, if not build it
+            
+            if kerbRealms[kerberosRealm] != nil {
+                myLogger.logit(LogLevel.debug, message: "Existing Kerberos configuration for realm. Skipping adding KDC to Kerberos prefs.")
+                return false
+            } else {
+                // build a dictionary and add the KDC into it then write it back to defaults
+                let realm = NSMutableDictionary()
+                //realm.setValue(myLDAPServers.currentServer, forKey: "kdc")
+                realm.setValue(currentServer, forKey: "kpasswd")
+                kerbRealms[kerberosRealm] = realm
+                kerbPrefs?.set(kerbRealms, forKey: "realms")
+                return true
+            }
+        } else {
+            myLogger.logit(LogLevel.base, message: "Couldn't find kpasswd server that matches current LDAP server. Letting system chose.")
+            return false
+        }
+        return false
+    }
 }
+

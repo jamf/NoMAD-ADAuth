@@ -31,6 +31,9 @@
 		1AB3EF6B1FB69CE7002D5F99 /* WindowsCATools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF651FB69A84002D5F99 /* WindowsCATools.swift */; };
 		1AB3EF6C1FB69CED002D5F99 /* CSRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF661FB69A87002D5F99 /* CSRGen.swift */; };
 		1AB3EF701FB69E0D002D5F99 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF6D1FB69DB1002D5F99 /* Security.framework */; };
+		1AB3EF771FB6A302002D5F99 /* SiteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */; };
+		1AB3EF7B1FB6A3AB002D5F99 /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */; };
+		1AB3EF7D1FB6A476002D5F99 /* ExpirationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -75,6 +78,9 @@
 		1AB3EF661FB69A87002D5F99 /* CSRGen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSRGen.swift; sourceTree = "<group>"; };
 		1AB3EF691FB69B09002D5F99 /* libcommonCrypto.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libcommonCrypto.tbd; path = usr/lib/system/libcommonCrypto.tbd; sourceTree = SDKROOT; };
 		1AB3EF6D1FB69DB1002D5F99 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
+		1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteManager.swift; sourceTree = "<group>"; };
+		1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
+		1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpirationManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -122,6 +128,7 @@
 		1A10FCBF1FAEA7B300D30727 /* NoMAD-ADAuth */ = {
 			isa = PBXGroup;
 			children = (
+				1AB3EF711FB6A08B002D5F99 /* Managers */,
 				1AB3EF641FB69A73002D5F99 /* CSR */,
 				1AB3EF2F1FB68A70002D5F99 /* NoMAD-ADAuthPrivate */,
 				1AB3EF081FB68922002D5F99 /* NoMADSession.swift */,
@@ -215,6 +222,16 @@
 				1AB3EF651FB69A84002D5F99 /* WindowsCATools.swift */,
 			);
 			name = CSR;
+			sourceTree = "<group>";
+		};
+		1AB3EF711FB6A08B002D5F99 /* Managers */ = {
+			isa = PBXGroup;
+			children = (
+				1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */,
+				1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */,
+				1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */,
+			);
+			name = Managers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -337,8 +354,11 @@
 				1AB3EEED1FB6887C002D5F99 /* ADLDAPPing.swift in Sources */,
 				1AB3EF071FB68904002D5F99 /* UserRecord.swift in Sources */,
 				1AB3EEF41FB688A6002D5F99 /* Logger.swift in Sources */,
+				1AB3EF771FB6A302002D5F99 /* SiteManager.swift in Sources */,
 				1AB3EEF31FB688A6002D5F99 /* Extensions.swift in Sources */,
+				1AB3EF7B1FB6A3AB002D5F99 /* SessionManager.swift in Sources */,
 				1AB3EF051FB688E6002D5F99 /* DNSResolver.m in Sources */,
+				1AB3EF7D1FB6A476002D5F99 /* ExpirationManager.swift in Sources */,
 				1AB3EF6B1FB69CE7002D5F99 /* WindowsCATools.swift in Sources */,
 				1AB3EEFE1FB688CB002D5F99 /* KerbUtil.m in Sources */,
 				1AB3EF091FB68922002D5F99 /* NoMADSession.swift in Sources */,
