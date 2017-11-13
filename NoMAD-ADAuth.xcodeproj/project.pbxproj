@@ -28,8 +28,6 @@
 		1AB3EF601FB6963B002D5F99 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF361FB68F37002D5F99 /* libresolv.tbd */; };
 		1AB3EF611FB6963D002D5F99 /* Kerberos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF341FB68BC4002D5F99 /* Kerberos.framework */; };
 		1AB3EF631FB698CC002D5F99 /* ADUserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF621FB698CC002D5F99 /* ADUserTests.swift */; };
-		1AB3EF6B1FB69CE7002D5F99 /* WindowsCATools.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF651FB69A84002D5F99 /* WindowsCATools.swift */; };
-		1AB3EF6C1FB69CED002D5F99 /* CSRGen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF661FB69A87002D5F99 /* CSRGen.swift */; };
 		1AB3EF701FB69E0D002D5F99 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF6D1FB69DB1002D5F99 /* Security.framework */; };
 		1AB3EF771FB6A302002D5F99 /* SiteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */; };
 		1AB3EF7B1FB6A3AB002D5F99 /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */; };
@@ -350,7 +348,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AB3EF6C1FB69CED002D5F99 /* CSRGen.swift in Sources */,
 				1AB3EEED1FB6887C002D5F99 /* ADLDAPPing.swift in Sources */,
 				1AB3EF071FB68904002D5F99 /* UserRecord.swift in Sources */,
 				1AB3EEF41FB688A6002D5F99 /* Logger.swift in Sources */,
@@ -359,7 +356,6 @@
 				1AB3EF7B1FB6A3AB002D5F99 /* SessionManager.swift in Sources */,
 				1AB3EF051FB688E6002D5F99 /* DNSResolver.m in Sources */,
 				1AB3EF7D1FB6A476002D5F99 /* ExpirationManager.swift in Sources */,
-				1AB3EF6B1FB69CE7002D5F99 /* WindowsCATools.swift in Sources */,
 				1AB3EEFE1FB688CB002D5F99 /* KerbUtil.m in Sources */,
 				1AB3EF091FB68922002D5F99 /* NoMADSession.swift in Sources */,
 				1AB3EEFD1FB688CB002D5F99 /* KlistUtil.swift in Sources */,
@@ -504,7 +500,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;
@@ -536,7 +532,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEFINES_MODULE = YES;

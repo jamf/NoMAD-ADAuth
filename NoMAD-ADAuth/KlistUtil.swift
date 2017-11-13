@@ -24,6 +24,8 @@ struct Ticket {
     var GSSItem: GSSItemRef?
 }
 
+// singleton for the class
+
 let klistUtil = KlistUtil()
 
 class KlistUtil {
