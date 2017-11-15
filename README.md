@@ -7,12 +7,13 @@ This framework is written primarily in Swift 4 on Xcode 9.1 and while much of th
 ## Overview
 
 The NoMAD AD Authentication Framework allows you to present a username and password to the Framework and have it get tickets for the user and then lookup the user's information in AD. In addition the framework is:
-    - site aware
-    - able to change passwords
-    - able to use SSL for AD lookups
-    - can have the site forced or ignored
-    - is aware of network changes, and will mark sites to be re-discovered on changes
-    - perform recursive group lookups
+
+- site aware
+- able to change passwords
+- able to use SSL for AD lookups
+- can have the site forced or ignored
+- is aware of network changes, and will mark sites to be re-discovered on changes
+- perform recursive group lookups
 
 ## Basic Usage of the Framework
 

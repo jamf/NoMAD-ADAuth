@@ -43,6 +43,9 @@ public enum NoMADSessionError: Error {
     case StateError
     case AuthenticationFailure
     case KerbError
+    case PasswordExpired
+    case unknownPrincipal
+    case wrongRealm
 }
 
 public enum LDAPType {
@@ -82,6 +85,7 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
     
     public var domain: String = ""                  // current LDAP Domain - can be set with init
     public var kerberosRealm: String = ""           // Kerberos realm
+    public var createKerbPrefs: Bool = true         // Determines if skeleton Kerb prefs should be set
     
     public var siteIgnore: Bool = false             // ignore site lookup?
     public var siteForce: Bool = false              // force a site?
@@ -189,7 +193,7 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
             switch ldaptype {
             case .AD: errorMessage = "No AD Domain Controllers can be reached."
             case .OD: errorMessage = "No Open Directory servers can be reached."
-            default: errorMessage = "No LDAP servers can be reached."
+            //default: errorMessage = "No LDAP servers can be reached."
             }
             
             delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.OffDomain, description: errorMessage)
@@ -231,9 +235,9 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
     public func changePassword() {
         // change user's password
         
-        // check kerb prefs
+        // check kerb prefs - otherwise we can get an error here if not set
         
-        checkKpasswdServer()
+        _ = checkKpasswdServer()
         
         // set up the KerbUtil
         
@@ -258,6 +262,10 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
         } else {
             delegate?.NoMADAuthenticationSucceded()
         }
+        
+        // clean the kerb prefs so we don't reuse the KDCs
+        
+        cleanKerbPrefs()
     }
     
     // function to authenticate a user via Kerberos
@@ -284,7 +292,17 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
         if kerbError != nil {
             // error
             state = .kerbError
-            delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError!)
+            
+            switch kerbError {
+            case "Password has expired"? :
+                delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.PasswordExpired, description: kerbError!)
+                break
+            case "Wrong realm"? :
+                delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.wrongRealm, description: kerbError!)
+                break
+            default:
+                delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError!)
+            }
             
         } else {
             
@@ -975,6 +993,7 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
     }
     
     // MARK: Kerberos preference file needs to be updated:
+    // This function builds new Kerb prefs with KDC included if possible
     
     private func checkKpasswdServer() -> Bool {
         
@@ -1030,7 +1049,62 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
             myLogger.logit(LogLevel.base, message: "Couldn't find kpasswd server that matches current LDAP server. Letting system chose.")
             return false
         }
-        return false
+    }
+    
+    // Remove a default realm from the Kerb pref file
+    
+    fileprivate func cleanKerbPrefs(clearLibDefaults: Bool=false) {
+        
+        // get the defaults for com.apple.Kerberos
+        
+        let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
+        
+        // get the list of domains, or create an empty dictionary if there are none
+        
+        var kerbRealms = kerbPrefs?.dictionary(forKey: "realms")  ?? [String:AnyObject]()
+        
+        // test to see if the realm already exists, if it's already gone we are good
+        
+        if kerbRealms[kerberosRealm] == nil {
+            myLogger.logit(LogLevel.debug, message: "No realm in com.apple.Kerberos defaults.")
+        } else {
+            myLogger.logit(LogLevel.debug, message: "Removing realm from Kerberos Preferences.")
+            // remove the realm from the realms list
+            kerbRealms.removeValue(forKey: kerberosRealm)
+            // save the dictionary back to the pref file
+            kerbPrefs?.set(kerbRealms, forKey: "realms")
+            
+            if clearLibDefaults {
+                var libDefaults = kerbPrefs?.dictionary(forKey: "libdefaults")  ?? [String:AnyObject]()
+                libDefaults.removeValue(forKey: "default_realm")
+                kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+            }
+        }
+    }
+    
+    // Create a minimal com.apple.Kerberos file so we don't barf on password change
+    
+    fileprivate func createBasicKerbPrefs(realm: String?) {
+        
+        let realm = realm ?? kerberosRealm
+        
+        // get the defaults for com.apple.Kerberos
+        
+        let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
+
+        // get the list defaults, or create an empty dictionary if there are none
+        
+        var kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
+        
+        // test to see if the domain_defaults key already exists, if not build it
+        
+        if kerbDefaults["default_realm"] != nil {
+            myLogger.logit(LogLevel.debug, message: "Existing default realm. Skipping adding default realm to Kerberos prefs.")
+        } else {
+            // build a dictionary and add the KDC into it then write it back to defaults
+            let libDefaults = NSMutableDictionary()
+            libDefaults.setValue(realm, forKey: "default_realm")
+            kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+        }
     }
 }
-
