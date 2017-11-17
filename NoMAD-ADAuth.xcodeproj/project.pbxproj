@@ -13,7 +13,7 @@
 		1AB3EEED1FB6887C002D5F99 /* ADLDAPPing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEEC1FB6887C002D5F99 /* ADLDAPPing.swift */; };
 		1AB3EEF31FB688A6002D5F99 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF01FB688A6002D5F99 /* Extensions.swift */; };
 		1AB3EEF41FB688A6002D5F99 /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF11FB688A6002D5F99 /* Logger.swift */; };
-		1AB3EEF51FB688A6002D5F99 /* NSTaskWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF21FB688A6002D5F99 /* NSTaskWrapper.swift */; };
+		1AB3EEF51FB688A6002D5F99 /* UNIXUtilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF21FB688A6002D5F99 /* UNIXUtilities.swift */; };
 		1AB3EEFC1FB688CB002D5F99 /* KerbUtil.h in Headers */ = {isa = PBXBuildFile; fileRef = 1AB3EEF71FB688CB002D5F99 /* KerbUtil.h */; };
 		1AB3EEFD1FB688CB002D5F99 /* KlistUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF81FB688CB002D5F99 /* KlistUtil.swift */; };
 		1AB3EEFE1FB688CB002D5F99 /* KerbUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EEF91FB688CB002D5F99 /* KerbUtil.m */; };
@@ -54,7 +54,7 @@
 		1AB3EEEC1FB6887C002D5F99 /* ADLDAPPing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ADLDAPPing.swift; sourceTree = "<group>"; };
 		1AB3EEF01FB688A6002D5F99 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		1AB3EEF11FB688A6002D5F99 /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		1AB3EEF21FB688A6002D5F99 /* NSTaskWrapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NSTaskWrapper.swift; sourceTree = "<group>"; };
+		1AB3EEF21FB688A6002D5F99 /* UNIXUtilities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UNIXUtilities.swift; sourceTree = "<group>"; };
 		1AB3EEF71FB688CB002D5F99 /* KerbUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = KerbUtil.h; sourceTree = "<group>"; };
 		1AB3EEF81FB688CB002D5F99 /* KlistUtil.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KlistUtil.swift; sourceTree = "<group>"; };
 		1AB3EEF91FB688CB002D5F99 /* KerbUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = KerbUtil.m; sourceTree = "<group>"; };
@@ -167,7 +167,7 @@
 				1AB3EF061FB68904002D5F99 /* UserRecord.swift */,
 				1AB3EEF01FB688A6002D5F99 /* Extensions.swift */,
 				1AB3EEF11FB688A6002D5F99 /* Logger.swift */,
-				1AB3EEF21FB688A6002D5F99 /* NSTaskWrapper.swift */,
+				1AB3EEF21FB688A6002D5F99 /* UNIXUtilities.swift */,
 			);
 			name = Utility;
 			sourceTree = "<group>";
@@ -359,7 +359,7 @@
 				1AB3EEFE1FB688CB002D5F99 /* KerbUtil.m in Sources */,
 				1AB3EF091FB68922002D5F99 /* NoMADSession.swift in Sources */,
 				1AB3EEFD1FB688CB002D5F99 /* KlistUtil.swift in Sources */,
-				1AB3EEF51FB688A6002D5F99 /* NSTaskWrapper.swift in Sources */,
+				1AB3EEF51FB688A6002D5F99 /* UNIXUtilities.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
