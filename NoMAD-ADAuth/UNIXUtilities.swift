@@ -145,7 +145,7 @@ public func cliTaskNoTerm(_ command: String) -> String {
 
 /// Find the short name of the current console user.
 ///
-/// - Returns: The current, logged in, user's short name.
+/// - Returns: The current, logged in, user's short name as a `String`.
 public func getConsoleUser() -> String {
     var uid: uid_t = 0
     var gid: gid_t = 0
@@ -158,6 +158,10 @@ public func getConsoleUser() -> String {
     return userName
 }
 
+
+/// Finds the serial number of the Mac.
+///
+/// - Returns: The serial number of the Mac as a `String`.
 public func getSerial() -> String {
 
     guard let platformExpert: io_service_t = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice")),
@@ -172,8 +176,10 @@ public func getSerial() -> String {
 
 }
 
-// get hardware MAC addresss
 
+/// Finds the MAC address of the primary ethernet connection.
+///
+/// - Returns: First MAC address of Mac as a `String`.
 public func getMAC() -> String {
 
     let myMACOutput = cliTask("/sbin/ifconfig -a").components(separatedBy: "\n")
@@ -190,6 +196,10 @@ public func getMAC() -> String {
 
 // private function to get the path to the binary if the full path isn't given
 
+/// <#Description#>
+///
+/// - Parameter command: <#command description#>
+/// - Returns: <#return value description#>
 private func which(_ command: String) -> String {
     let task = Process()
     task.launchPath = "/usr/bin/which"
