@@ -543,7 +543,7 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
             site = siteForceSite
             myLogger.logit(LogLevel.debug, message:"Site being forced to site set in preferences.")
         } else {
-            site = ldapPing.clientSite ?? ""
+            site = ldapPing.clientSite
         }
         
         
