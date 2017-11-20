@@ -63,7 +63,7 @@ public struct NoMADLDAPServer {
 
 // MARK: Start of public class
 
-public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
+public class NoMADSession : NSObject, NoMADUserSession {
     
     // varibles
     
@@ -485,15 +485,6 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
         }
     }
     
-    
-    // MARK: DNSResolver Delegate Methods
-    
-    public func dnsResolver(_ resolver: DNSResolver!, didReceiveQueryResult queryResult: [AnyHashable: Any]!) {
-    }
-    
-    public func dnsResolver(_ resolver: DNSResolver!, didStopQueryWithError error: NSError!) {
-    }
-    
     // MARK: Sites
     
     // private function to get the AD site
@@ -728,7 +719,7 @@ public class NoMADSession : NSObject, NoMADUserSession, DNSResolverDelegate {
                         passwordExpirationLength = ""
                     }
                     
-                    if ( passwordExpirationLength.characters.count > 15 ) {
+                    if ( passwordExpirationLength.count > 15 ) {
                         passwordAging = false
                     } else if ( passwordExpirationLength != "" ) && userPasswordUACFlag != "" {
                         if ~~( Int(userPasswordUACFlag)! & 0x10000 ) {
