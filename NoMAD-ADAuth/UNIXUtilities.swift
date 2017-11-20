@@ -163,19 +163,13 @@ public func getConsoleUser() -> String {
 ///
 /// - Returns: The serial number of the Mac as a `String`.
 public func getSerial() -> String {
-
-    guard let platformExpert: io_service_t = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice")),
-        let platformSerialNumberKey: CFString = kIOPlatformSerialNumberKey as CFString? else
-    {
-        return "Unknown"
-    }
-
-    let serialNumberAsCFString = IORegistryEntryCreateCFProperty(platformExpert, platformSerialNumberKey, kCFAllocatorDefault, 0)
+    let platformExpert: io_service_t = IOServiceGetMatchingService(kIOMasterPortDefault, IOServiceMatching("IOPlatformExpertDevice"))
+    let platformSerialNumberKey = kIOPlatformSerialNumberKey
+    let serialNumberAsCFString = IORegistryEntryCreateCFProperty(platformExpert, platformSerialNumberKey as CFString, kCFAllocatorDefault, 0)
     let serialNumber = serialNumberAsCFString?.takeUnretainedValue() as! String
     return serialNumber
 
 }
-
 
 /// Finds the MAC address of the primary ethernet connection.
 ///
@@ -196,10 +190,10 @@ public func getMAC() -> String {
 
 // private function to get the path to the binary if the full path isn't given
 
-/// <#Description#>
+/// Private function to get the path to a binary if the full path isn't given
 ///
-/// - Parameter command: <#command description#>
-/// - Returns: <#return value description#>
+/// - Parameter command: A `String` of the UNIX command to find the qualified path to.
+/// - Returns: A fully qualified path to any UNIX binary on the system from the which database.
 private func which(_ command: String) -> String {
     let task = Process()
     task.launchPath = "/usr/bin/which"
@@ -215,7 +209,5 @@ private func which(_ command: String) -> String {
     if output == "" {
         NSLog("Binary doesn't exist")
     }
-    
     return output.components(separatedBy: "\n").first!
-    
 }
