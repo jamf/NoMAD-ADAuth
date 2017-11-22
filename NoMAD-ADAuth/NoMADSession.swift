@@ -61,6 +61,7 @@ public struct NoMADLDAPServer {
 
 // MARK: Start of public class
 
+/// A general purpose class that is the main entrypoint for interactions with Active Directory.
 public class NoMADSession : NSObject {
     
     // varibles
@@ -107,6 +108,12 @@ public class NoMADSession : NSObject {
     
     // conv. init with domain and user
     
+    /// Convience initializer to create a `NoMADSession` with the given domain, username, and `LDAPType`
+    ///
+    /// - Parameters:
+    ///   - domain: The AD domain for the user.
+    ///   - user: The user's name. Either the User Principal Short, or the Users Principal name including the @domain syntax are accepted.
+    ///   - type: The type of LDAP connection. Defaults to AD.
     public init(domain: String, user: String, type: LDAPType = .AD) {
 
         // configuration parts
