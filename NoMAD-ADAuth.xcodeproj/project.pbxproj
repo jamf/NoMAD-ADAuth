@@ -65,7 +65,6 @@
 		1AB3EF061FB68904002D5F99 /* UserRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserRecord.swift; sourceTree = "<group>"; };
 		1AB3EF081FB68922002D5F99 /* NoMADSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NoMADSession.swift; sourceTree = "<group>"; };
 		1AB3EF0A1FB689A2002D5F99 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
-		1AB3EF0B1FB68A23002D5F99 /* NoMADADAuth.private.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = NoMADADAuth.private.modulemap; sourceTree = "<group>"; };
 		1AB3EF301FB68A7D002D5F99 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		1AB3EF311FB68B12002D5F99 /* FRAMEWORK.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = FRAMEWORK.md; sourceTree = "<group>"; };
 		1AB3EF341FB68BC4002D5F99 /* Kerberos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Kerberos.framework; path = System/Library/Frameworks/Kerberos.framework; sourceTree = SDKROOT; };
@@ -129,9 +128,7 @@
 			children = (
 				1AB3EF711FB6A08B002D5F99 /* Managers */,
 				1AB3EF641FB69A73002D5F99 /* CSR */,
-				1AB3EF2F1FB68A70002D5F99 /* NoMAD-ADAuthPrivate */,
 				1AB3EF081FB68922002D5F99 /* NoMADSession.swift */,
-				1AB3EF0B1FB68A23002D5F99 /* NoMADADAuth.private.modulemap */,
 				1AB3EF011FB688D8002D5F99 /* DNS */,
 				1AB3EEF61FB688AD002D5F99 /* Kerberos */,
 				1AB3EEEF1FB6889A002D5F99 /* Utility */,
@@ -139,6 +136,7 @@
 				1A10FCC01FAEA7B300D30727 /* NoMAD_ADAuth.h */,
 				1A10FCC11FAEA7B300D30727 /* Info.plist */,
 				1AB3EF311FB68B12002D5F99 /* FRAMEWORK.md */,
+				1AB3EF301FB68A7D002D5F99 /* module.modulemap */,
 			);
 			path = "NoMAD-ADAuth";
 			sourceTree = "<group>";
@@ -191,14 +189,6 @@
 				1AB3EF031FB688E6002D5F99 /* DNSResolver.m */,
 			);
 			name = DNS;
-			sourceTree = "<group>";
-		};
-		1AB3EF2F1FB68A70002D5F99 /* NoMAD-ADAuthPrivate */ = {
-			isa = PBXGroup;
-			children = (
-				1AB3EF301FB68A7D002D5F99 /* module.modulemap */,
-			);
-			name = "NoMAD-ADAuthPrivate";
 			sourceTree = "<group>";
 		};
 		1AB3EF321FB68BA9002D5F99 /* Frameworks */ = {
@@ -519,11 +509,11 @@
 					"$(SDKROOT)/usr/lib/system",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MODULEMAP_PRIVATE_FILE = "$(SRCROOT)/NoMAD-ADAuth/NoMADADAuth.private.modulemap";
+				MODULEMAP_PRIVATE_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuth";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth";
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth/**";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.0;
 			};
@@ -551,11 +541,11 @@
 					"$(SDKROOT)/usr/lib/system",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
-				MODULEMAP_PRIVATE_FILE = "$(SRCROOT)/NoMAD-ADAuth/NoMADADAuth.private.modulemap";
+				MODULEMAP_PRIVATE_FILE = "";
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuth";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
-				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth";
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth/**";
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;
