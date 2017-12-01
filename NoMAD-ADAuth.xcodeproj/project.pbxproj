@@ -32,6 +32,57 @@
 		1AB3EF771FB6A302002D5F99 /* SiteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */; };
 		1AB3EF7B1FB6A3AB002D5F99 /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */; };
 		1AB3EF7D1FB6A476002D5F99 /* ExpirationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */; };
+		9C5444D51FD19B4700984A71 /* Structs.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C54448F1FD19B4700984A71 /* Structs.html */; };
+		9C5444D61FD19B4700984A71 /* Enums.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444901FD19B4700984A71 /* Enums.html */; };
+		9C5444D71FD19B4700984A71 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444911FD19B4700984A71 /* index.html */; };
+		9C5444D81FD19B4700984A71 /* Functions.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444921FD19B4700984A71 /* Functions.html */; };
+		9C5444D91FD19B4700984A71 /* search.json in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444931FD19B4700984A71 /* search.json */; };
+		9C5444DA1FD19B4700984A71 /* highlight.css in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444951FD19B4700984A71 /* highlight.css */; };
+		9C5444DB1FD19B4700984A71 /* jazzy.css in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444961FD19B4700984A71 /* jazzy.css */; };
+		9C5444DC1FD19B4700984A71 /* SessionManager.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444981FD19B4700984A71 /* SessionManager.html */; };
+		9C5444DD1FD19B4700984A71 /* NoMADSession.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444991FD19B4700984A71 /* NoMADSession.html */; };
+		9C5444DE1FD19B4700984A71 /* jquery.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 9C54449B1FD19B4700984A71 /* jquery.min.js */; };
+		9C5444DF1FD19B4700984A71 /* jazzy.js in Resources */ = {isa = PBXBuildFile; fileRef = 9C54449C1FD19B4700984A71 /* jazzy.js */; };
+		9C5444E01FD19B4700984A71 /* NoMADSessionState.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C54449E1FD19B4700984A71 /* NoMADSessionState.html */; };
+		9C5444E11FD19B4700984A71 /* NoMADSessionError.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C54449F1FD19B4700984A71 /* NoMADSessionError.html */; };
+		9C5444E21FD19B4700984A71 /* LDAPType.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A01FD19B4700984A71 /* LDAPType.html */; };
+		9C5444E31FD19B4700984A71 /* carat.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A21FD19B4700984A71 /* carat.png */; };
+		9C5444E41FD19B4700984A71 /* dash.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A31FD19B4700984A71 /* dash.png */; };
+		9C5444E51FD19B4700984A71 /* gh.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A41FD19B4700984A71 /* gh.png */; };
+		9C5444E61FD19B4700984A71 /* undocumented.json in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A51FD19B4700984A71 /* undocumented.json */; };
+		9C5444E71FD19B4700984A71 /* badge.svg in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A61FD19B4700984A71 /* badge.svg */; };
+		9C5444E81FD19B4700984A71 /* ADUserRecord.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A81FD19B4700984A71 /* ADUserRecord.html */; };
+		9C5444E91FD19B4700984A71 /* Classes.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444A91FD19B4700984A71 /* Classes.html */; };
+		9C5444EA1FD19B4700984A71 /* docSet.dsidx in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444AE1FD19B4700984A71 /* docSet.dsidx */; };
+		9C5444EB1FD19B4700984A71 /* Structs.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B01FD19B4700984A71 /* Structs.html */; };
+		9C5444EC1FD19B4700984A71 /* Enums.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B11FD19B4700984A71 /* Enums.html */; };
+		9C5444ED1FD19B4700984A71 /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B21FD19B4700984A71 /* index.html */; };
+		9C5444EE1FD19B4700984A71 /* Functions.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B31FD19B4700984A71 /* Functions.html */; };
+		9C5444EF1FD19B4700984A71 /* search.json in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B41FD19B4700984A71 /* search.json */; };
+		9C5444F01FD19B4700984A71 /* highlight.css in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B61FD19B4700984A71 /* highlight.css */; };
+		9C5444F11FD19B4700984A71 /* jazzy.css in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B71FD19B4700984A71 /* jazzy.css */; };
+		9C5444F21FD19B4700984A71 /* SessionManager.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444B91FD19B4700984A71 /* SessionManager.html */; };
+		9C5444F31FD19B4700984A71 /* NoMADSession.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444BA1FD19B4700984A71 /* NoMADSession.html */; };
+		9C5444F41FD19B4700984A71 /* jquery.min.js in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444BC1FD19B4700984A71 /* jquery.min.js */; };
+		9C5444F51FD19B4700984A71 /* jazzy.js in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444BD1FD19B4700984A71 /* jazzy.js */; };
+		9C5444F61FD19B4700984A71 /* NoMADSessionState.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444BF1FD19B4700984A71 /* NoMADSessionState.html */; };
+		9C5444F71FD19B4700984A71 /* NoMADSessionError.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C01FD19B4700984A71 /* NoMADSessionError.html */; };
+		9C5444F81FD19B4700984A71 /* LDAPType.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C11FD19B4700984A71 /* LDAPType.html */; };
+		9C5444F91FD19B4700984A71 /* carat.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C31FD19B4700984A71 /* carat.png */; };
+		9C5444FA1FD19B4700984A71 /* dash.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C41FD19B4700984A71 /* dash.png */; };
+		9C5444FB1FD19B4700984A71 /* gh.png in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C51FD19B4700984A71 /* gh.png */; };
+		9C5444FC1FD19B4700984A71 /* ADUserRecord.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C71FD19B4700984A71 /* ADUserRecord.html */; };
+		9C5444FD1FD19B4700984A71 /* Classes.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C81FD19B4700984A71 /* Classes.html */; };
+		9C5444FE1FD19B4700984A71 /* Protocols.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444C91FD19B4700984A71 /* Protocols.html */; };
+		9C5444FF1FD19B4700984A71 /* NoMADUserSessionDelegate.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444CB1FD19B4700984A71 /* NoMADUserSessionDelegate.html */; };
+		9C5445001FD19B4700984A71 /* NoMADUserSession.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444CC1FD19B4700984A71 /* NoMADUserSession.html */; };
+		9C5445011FD19B4700984A71 /* NoMADUserRecord.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444CD1FD19B4700984A71 /* NoMADUserRecord.html */; };
+		9C5445021FD19B4700984A71 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444CE1FD19B4700984A71 /* Info.plist */; };
+		9C5445031FD19B4700984A71 /* .tgz in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444CF1FD19B4700984A71 /* .tgz */; };
+		9C5445041FD19B4700984A71 /* Protocols.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444D01FD19B4700984A71 /* Protocols.html */; };
+		9C5445051FD19B4700984A71 /* NoMADUserSessionDelegate.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444D21FD19B4700984A71 /* NoMADUserSessionDelegate.html */; };
+		9C5445061FD19B4700984A71 /* NoMADUserSession.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444D31FD19B4700984A71 /* NoMADUserSession.html */; };
+		9C5445071FD19B4700984A71 /* NoMADUserRecord.html in Resources */ = {isa = PBXBuildFile; fileRef = 9C5444D41FD19B4700984A71 /* NoMADUserRecord.html */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +129,57 @@
 		1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteManager.swift; sourceTree = "<group>"; };
 		1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpirationManager.swift; sourceTree = "<group>"; };
+		9C54448F1FD19B4700984A71 /* Structs.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Structs.html; sourceTree = "<group>"; };
+		9C5444901FD19B4700984A71 /* Enums.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Enums.html; sourceTree = "<group>"; };
+		9C5444911FD19B4700984A71 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		9C5444921FD19B4700984A71 /* Functions.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Functions.html; sourceTree = "<group>"; };
+		9C5444931FD19B4700984A71 /* search.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = search.json; sourceTree = "<group>"; };
+		9C5444951FD19B4700984A71 /* highlight.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = highlight.css; sourceTree = "<group>"; };
+		9C5444961FD19B4700984A71 /* jazzy.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = jazzy.css; sourceTree = "<group>"; };
+		9C5444981FD19B4700984A71 /* SessionManager.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = SessionManager.html; sourceTree = "<group>"; };
+		9C5444991FD19B4700984A71 /* NoMADSession.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = NoMADSession.html; sourceTree = "<group>"; };
+		9C54449B1FD19B4700984A71 /* jquery.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.min.js; sourceTree = "<group>"; };
+		9C54449C1FD19B4700984A71 /* jazzy.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jazzy.js; sourceTree = "<group>"; };
+		9C54449E1FD19B4700984A71 /* NoMADSessionState.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = NoMADSessionState.html; sourceTree = "<group>"; };
+		9C54449F1FD19B4700984A71 /* NoMADSessionError.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = NoMADSessionError.html; sourceTree = "<group>"; };
+		9C5444A01FD19B4700984A71 /* LDAPType.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = LDAPType.html; sourceTree = "<group>"; };
+		9C5444A21FD19B4700984A71 /* carat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = carat.png; sourceTree = "<group>"; };
+		9C5444A31FD19B4700984A71 /* dash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dash.png; sourceTree = "<group>"; };
+		9C5444A41FD19B4700984A71 /* gh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gh.png; sourceTree = "<group>"; };
+		9C5444A51FD19B4700984A71 /* undocumented.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = undocumented.json; sourceTree = "<group>"; };
+		9C5444A61FD19B4700984A71 /* badge.svg */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = badge.svg; sourceTree = "<group>"; };
+		9C5444A81FD19B4700984A71 /* ADUserRecord.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = ADUserRecord.html; sourceTree = "<group>"; };
+		9C5444A91FD19B4700984A71 /* Classes.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Classes.html; sourceTree = "<group>"; };
+		9C5444AE1FD19B4700984A71 /* docSet.dsidx */ = {isa = PBXFileReference; lastKnownFileType = file; path = docSet.dsidx; sourceTree = "<group>"; };
+		9C5444B01FD19B4700984A71 /* Structs.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = Structs.html; sourceTree = "<group>"; };
+		9C5444B11FD19B4700984A71 /* Enums.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = Enums.html; sourceTree = "<group>"; };
+		9C5444B21FD19B4700984A71 /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = index.html; sourceTree = "<group>"; };
+		9C5444B31FD19B4700984A71 /* Functions.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = Functions.html; sourceTree = "<group>"; };
+		9C5444B41FD19B4700984A71 /* search.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = search.json; sourceTree = "<group>"; };
+		9C5444B61FD19B4700984A71 /* highlight.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = highlight.css; sourceTree = "<group>"; };
+		9C5444B71FD19B4700984A71 /* jazzy.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; path = jazzy.css; sourceTree = "<group>"; };
+		9C5444B91FD19B4700984A71 /* SessionManager.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = SessionManager.html; sourceTree = "<group>"; };
+		9C5444BA1FD19B4700984A71 /* NoMADSession.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = NoMADSession.html; sourceTree = "<group>"; };
+		9C5444BC1FD19B4700984A71 /* jquery.min.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jquery.min.js; sourceTree = "<group>"; };
+		9C5444BD1FD19B4700984A71 /* jazzy.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = jazzy.js; sourceTree = "<group>"; };
+		9C5444BF1FD19B4700984A71 /* NoMADSessionState.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = NoMADSessionState.html; sourceTree = "<group>"; };
+		9C5444C01FD19B4700984A71 /* NoMADSessionError.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = NoMADSessionError.html; sourceTree = "<group>"; };
+		9C5444C11FD19B4700984A71 /* LDAPType.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = LDAPType.html; sourceTree = "<group>"; };
+		9C5444C31FD19B4700984A71 /* carat.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = carat.png; sourceTree = "<group>"; };
+		9C5444C41FD19B4700984A71 /* dash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = dash.png; sourceTree = "<group>"; };
+		9C5444C51FD19B4700984A71 /* gh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = gh.png; sourceTree = "<group>"; };
+		9C5444C71FD19B4700984A71 /* ADUserRecord.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = ADUserRecord.html; sourceTree = "<group>"; };
+		9C5444C81FD19B4700984A71 /* Classes.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = Classes.html; sourceTree = "<group>"; };
+		9C5444C91FD19B4700984A71 /* Protocols.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = Protocols.html; sourceTree = "<group>"; };
+		9C5444CB1FD19B4700984A71 /* NoMADUserSessionDelegate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = NoMADUserSessionDelegate.html; sourceTree = "<group>"; };
+		9C5444CC1FD19B4700984A71 /* NoMADUserSession.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = NoMADUserSession.html; sourceTree = "<group>"; };
+		9C5444CD1FD19B4700984A71 /* NoMADUserRecord.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html.documentation; path = NoMADUserRecord.html; sourceTree = "<group>"; };
+		9C5444CE1FD19B4700984A71 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		9C5444CF1FD19B4700984A71 /* .tgz */ = {isa = PBXFileReference; lastKnownFileType = file; path = .tgz; sourceTree = "<group>"; };
+		9C5444D01FD19B4700984A71 /* Protocols.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = Protocols.html; sourceTree = "<group>"; };
+		9C5444D21FD19B4700984A71 /* NoMADUserSessionDelegate.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = NoMADUserSessionDelegate.html; sourceTree = "<group>"; };
+		9C5444D31FD19B4700984A71 /* NoMADUserSession.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = NoMADUserSession.html; sourceTree = "<group>"; };
+		9C5444D41FD19B4700984A71 /* NoMADUserRecord.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = NoMADUserRecord.html; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +208,7 @@
 		1A10FCB31FAEA7B200D30727 = {
 			isa = PBXGroup;
 			children = (
+				9C54448E1FD19B4700984A71 /* docs */,
 				1AB3EF0A1FB689A2002D5F99 /* README.md */,
 				1A10FCBF1FAEA7B300D30727 /* NoMAD-ADAuth */,
 				1A10FCCA1FAEA7B300D30727 /* NoMAD-ADAuthTests */,
@@ -222,6 +325,216 @@
 			name = Managers;
 			sourceTree = "<group>";
 		};
+		9C54448E1FD19B4700984A71 /* docs */ = {
+			isa = PBXGroup;
+			children = (
+				9C54448F1FD19B4700984A71 /* Structs.html */,
+				9C5444901FD19B4700984A71 /* Enums.html */,
+				9C5444911FD19B4700984A71 /* index.html */,
+				9C5444921FD19B4700984A71 /* Functions.html */,
+				9C5444931FD19B4700984A71 /* search.json */,
+				9C5444941FD19B4700984A71 /* css */,
+				9C5444971FD19B4700984A71 /* Classes */,
+				9C54449A1FD19B4700984A71 /* js */,
+				9C54449D1FD19B4700984A71 /* Enums */,
+				9C5444A11FD19B4700984A71 /* img */,
+				9C5444A51FD19B4700984A71 /* undocumented.json */,
+				9C5444A61FD19B4700984A71 /* badge.svg */,
+				9C5444A71FD19B4700984A71 /* Structs */,
+				9C5444A91FD19B4700984A71 /* Classes.html */,
+				9C5444AA1FD19B4700984A71 /* docsets */,
+				9C5444D01FD19B4700984A71 /* Protocols.html */,
+				9C5444D11FD19B4700984A71 /* Protocols */,
+			);
+			path = docs;
+			sourceTree = "<group>";
+		};
+		9C5444941FD19B4700984A71 /* css */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444951FD19B4700984A71 /* highlight.css */,
+				9C5444961FD19B4700984A71 /* jazzy.css */,
+			);
+			path = css;
+			sourceTree = "<group>";
+		};
+		9C5444971FD19B4700984A71 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444981FD19B4700984A71 /* SessionManager.html */,
+				9C5444991FD19B4700984A71 /* NoMADSession.html */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		9C54449A1FD19B4700984A71 /* js */ = {
+			isa = PBXGroup;
+			children = (
+				9C54449B1FD19B4700984A71 /* jquery.min.js */,
+				9C54449C1FD19B4700984A71 /* jazzy.js */,
+			);
+			path = js;
+			sourceTree = "<group>";
+		};
+		9C54449D1FD19B4700984A71 /* Enums */ = {
+			isa = PBXGroup;
+			children = (
+				9C54449E1FD19B4700984A71 /* NoMADSessionState.html */,
+				9C54449F1FD19B4700984A71 /* NoMADSessionError.html */,
+				9C5444A01FD19B4700984A71 /* LDAPType.html */,
+			);
+			path = Enums;
+			sourceTree = "<group>";
+		};
+		9C5444A11FD19B4700984A71 /* img */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444A21FD19B4700984A71 /* carat.png */,
+				9C5444A31FD19B4700984A71 /* dash.png */,
+				9C5444A41FD19B4700984A71 /* gh.png */,
+			);
+			path = img;
+			sourceTree = "<group>";
+		};
+		9C5444A71FD19B4700984A71 /* Structs */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444A81FD19B4700984A71 /* ADUserRecord.html */,
+			);
+			path = Structs;
+			sourceTree = "<group>";
+		};
+		9C5444AA1FD19B4700984A71 /* docsets */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444AB1FD19B4700984A71 /* .docset */,
+				9C5444CF1FD19B4700984A71 /* .tgz */,
+			);
+			path = docsets;
+			sourceTree = "<group>";
+		};
+		9C5444AB1FD19B4700984A71 /* .docset */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444AC1FD19B4700984A71 /* Contents */,
+			);
+			path = .docset;
+			sourceTree = "<group>";
+		};
+		9C5444AC1FD19B4700984A71 /* Contents */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444AD1FD19B4700984A71 /* Resources */,
+				9C5444CE1FD19B4700984A71 /* Info.plist */,
+			);
+			path = Contents;
+			sourceTree = "<group>";
+		};
+		9C5444AD1FD19B4700984A71 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444AE1FD19B4700984A71 /* docSet.dsidx */,
+				9C5444AF1FD19B4700984A71 /* Documents */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		9C5444AF1FD19B4700984A71 /* Documents */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444B01FD19B4700984A71 /* Structs.html */,
+				9C5444B11FD19B4700984A71 /* Enums.html */,
+				9C5444B21FD19B4700984A71 /* index.html */,
+				9C5444B31FD19B4700984A71 /* Functions.html */,
+				9C5444B41FD19B4700984A71 /* search.json */,
+				9C5444B51FD19B4700984A71 /* css */,
+				9C5444B81FD19B4700984A71 /* Classes */,
+				9C5444BB1FD19B4700984A71 /* js */,
+				9C5444BE1FD19B4700984A71 /* Enums */,
+				9C5444C21FD19B4700984A71 /* img */,
+				9C5444C61FD19B4700984A71 /* Structs */,
+				9C5444C81FD19B4700984A71 /* Classes.html */,
+				9C5444C91FD19B4700984A71 /* Protocols.html */,
+				9C5444CA1FD19B4700984A71 /* Protocols */,
+			);
+			path = Documents;
+			sourceTree = "<group>";
+		};
+		9C5444B51FD19B4700984A71 /* css */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444B61FD19B4700984A71 /* highlight.css */,
+				9C5444B71FD19B4700984A71 /* jazzy.css */,
+			);
+			path = css;
+			sourceTree = "<group>";
+		};
+		9C5444B81FD19B4700984A71 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444B91FD19B4700984A71 /* SessionManager.html */,
+				9C5444BA1FD19B4700984A71 /* NoMADSession.html */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+		9C5444BB1FD19B4700984A71 /* js */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444BC1FD19B4700984A71 /* jquery.min.js */,
+				9C5444BD1FD19B4700984A71 /* jazzy.js */,
+			);
+			path = js;
+			sourceTree = "<group>";
+		};
+		9C5444BE1FD19B4700984A71 /* Enums */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444BF1FD19B4700984A71 /* NoMADSessionState.html */,
+				9C5444C01FD19B4700984A71 /* NoMADSessionError.html */,
+				9C5444C11FD19B4700984A71 /* LDAPType.html */,
+			);
+			path = Enums;
+			sourceTree = "<group>";
+		};
+		9C5444C21FD19B4700984A71 /* img */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444C31FD19B4700984A71 /* carat.png */,
+				9C5444C41FD19B4700984A71 /* dash.png */,
+				9C5444C51FD19B4700984A71 /* gh.png */,
+			);
+			path = img;
+			sourceTree = "<group>";
+		};
+		9C5444C61FD19B4700984A71 /* Structs */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444C71FD19B4700984A71 /* ADUserRecord.html */,
+			);
+			path = Structs;
+			sourceTree = "<group>";
+		};
+		9C5444CA1FD19B4700984A71 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444CB1FD19B4700984A71 /* NoMADUserSessionDelegate.html */,
+				9C5444CC1FD19B4700984A71 /* NoMADUserSession.html */,
+				9C5444CD1FD19B4700984A71 /* NoMADUserRecord.html */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		9C5444D11FD19B4700984A71 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				9C5444D21FD19B4700984A71 /* NoMADUserSessionDelegate.html */,
+				9C5444D31FD19B4700984A71 /* NoMADUserSession.html */,
+				9C5444D41FD19B4700984A71 /* NoMADUserRecord.html */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -320,7 +633,58 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C5444FB1FD19B4700984A71 /* gh.png in Resources */,
+				9C5444DB1FD19B4700984A71 /* jazzy.css in Resources */,
+				9C5444F61FD19B4700984A71 /* NoMADSessionState.html in Resources */,
+				9C5444E91FD19B4700984A71 /* Classes.html in Resources */,
+				9C5444DC1FD19B4700984A71 /* SessionManager.html in Resources */,
+				9C5444ED1FD19B4700984A71 /* index.html in Resources */,
+				9C5444EE1FD19B4700984A71 /* Functions.html in Resources */,
+				9C5445031FD19B4700984A71 /* .tgz in Resources */,
+				9C5444E11FD19B4700984A71 /* NoMADSessionError.html in Resources */,
+				9C5445001FD19B4700984A71 /* NoMADUserSession.html in Resources */,
+				9C5444F11FD19B4700984A71 /* jazzy.css in Resources */,
+				9C5445021FD19B4700984A71 /* Info.plist in Resources */,
+				9C5444F31FD19B4700984A71 /* NoMADSession.html in Resources */,
+				9C5444FC1FD19B4700984A71 /* ADUserRecord.html in Resources */,
+				9C5444DA1FD19B4700984A71 /* highlight.css in Resources */,
+				9C5444F81FD19B4700984A71 /* LDAPType.html in Resources */,
+				9C5444F01FD19B4700984A71 /* highlight.css in Resources */,
+				9C5445051FD19B4700984A71 /* NoMADUserSessionDelegate.html in Resources */,
+				9C5444D61FD19B4700984A71 /* Enums.html in Resources */,
+				9C5444D71FD19B4700984A71 /* index.html in Resources */,
+				9C5444FA1FD19B4700984A71 /* dash.png in Resources */,
+				9C5445011FD19B4700984A71 /* NoMADUserRecord.html in Resources */,
+				9C5444EF1FD19B4700984A71 /* search.json in Resources */,
+				9C5444EB1FD19B4700984A71 /* Structs.html in Resources */,
+				9C5445071FD19B4700984A71 /* NoMADUserRecord.html in Resources */,
+				9C5444E71FD19B4700984A71 /* badge.svg in Resources */,
+				9C5444DD1FD19B4700984A71 /* NoMADSession.html in Resources */,
+				9C5444E31FD19B4700984A71 /* carat.png in Resources */,
+				9C5444E61FD19B4700984A71 /* undocumented.json in Resources */,
+				9C5444E81FD19B4700984A71 /* ADUserRecord.html in Resources */,
+				9C5444E21FD19B4700984A71 /* LDAPType.html in Resources */,
+				9C5445041FD19B4700984A71 /* Protocols.html in Resources */,
+				9C5444EA1FD19B4700984A71 /* docSet.dsidx in Resources */,
+				9C5444E41FD19B4700984A71 /* dash.png in Resources */,
+				9C5444DE1FD19B4700984A71 /* jquery.min.js in Resources */,
+				9C5444DF1FD19B4700984A71 /* jazzy.js in Resources */,
+				9C5444FE1FD19B4700984A71 /* Protocols.html in Resources */,
+				9C5444EC1FD19B4700984A71 /* Enums.html in Resources */,
+				9C5444F91FD19B4700984A71 /* carat.png in Resources */,
+				9C5444FD1FD19B4700984A71 /* Classes.html in Resources */,
+				9C5444E51FD19B4700984A71 /* gh.png in Resources */,
+				9C5444E01FD19B4700984A71 /* NoMADSessionState.html in Resources */,
+				9C5444F21FD19B4700984A71 /* SessionManager.html in Resources */,
+				9C5444F41FD19B4700984A71 /* jquery.min.js in Resources */,
+				9C5444FF1FD19B4700984A71 /* NoMADUserSessionDelegate.html in Resources */,
+				9C5444F71FD19B4700984A71 /* NoMADSessionError.html in Resources */,
+				9C5444F51FD19B4700984A71 /* jazzy.js in Resources */,
 				1AB3EF5E1FB6962A002D5F99 /* Info.plist in Resources */,
+				9C5445061FD19B4700984A71 /* NoMADUserSession.html in Resources */,
+				9C5444D91FD19B4700984A71 /* search.json in Resources */,
+				9C5444D51FD19B4700984A71 /* Structs.html in Resources */,
+				9C5444D81FD19B4700984A71 /* Functions.html in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
