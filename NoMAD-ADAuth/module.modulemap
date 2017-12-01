@@ -1,6 +1,6 @@
 //  Copyright © 2017 Orchard & Grove Inc. All rights reserved.
 
-module NoMADPRIVATE [system] {
+module NoMADPRIVATE {
     // Common Crypto
     
     //header "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include/CommonCrypto/CommonCrypto.h"
