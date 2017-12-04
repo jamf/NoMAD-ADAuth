@@ -32,6 +32,7 @@
 		1AB3EF771FB6A302002D5F99 /* SiteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */; };
 		1AB3EF7B1FB6A3AB002D5F99 /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */; };
 		1AB3EF7D1FB6A476002D5F99 /* ExpirationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */; };
+		9C00CCFE1FD5B8E900B5B36A /* SessionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C00CCFD1FD5B8E900B5B36A /* SessionManagerTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,6 +79,7 @@
 		1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteManager.swift; sourceTree = "<group>"; };
 		1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpirationManager.swift; sourceTree = "<group>"; };
+		9C00CCFD1FD5B8E900B5B36A /* SessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManagerTests.swift; sourceTree = "<group>"; };
 		9C4A11251FD1B2D6009EC7B4 /* Structs.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Structs.html; sourceTree = "<group>"; };
 		9C4A11261FD1B2D6009EC7B4 /* Enums.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Enums.html; sourceTree = "<group>"; };
 		9C4A11271FD1B2D6009EC7B4 /* index.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
@@ -124,7 +126,7 @@
 		9C4A11621FD1B2D6009EC7B4 /* NoMADUserSession.html */ = {isa = PBXFileReference; lastKnownFileType = text.html.documentation; path = NoMADUserSession.html; sourceTree = "<group>"; };
 		9C4A11631FD1B2D6009EC7B4 /* NoMADUserRecord.html */ = {isa = PBXFileReference; lastKnownFileType = text.html.documentation; path = NoMADUserRecord.html; sourceTree = "<group>"; };
 		9C4A11641FD1B2D6009EC7B4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		9C4A11651FD1B2D6009EC7B4 /* .tgz */ = {isa = PBXFileReference; lastKnownFileType = file; path = .tgz; sourceTree = "<group>"; };
+		9C4A11651FD1B2D6009EC7B4 /* .tgz */ = {isa = PBXFileReference; lastKnownFileType = text; path = .tgz; sourceTree = "<group>"; };
 		9C4A11661FD1B2D6009EC7B4 /* Protocols.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Protocols.html; sourceTree = "<group>"; };
 		9C4A11681FD1B2D6009EC7B4 /* NoMADUserSessionDelegate.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = NoMADUserSessionDelegate.html; sourceTree = "<group>"; };
 		9C4A11691FD1B2D6009EC7B4 /* NoMADUserSession.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = NoMADUserSession.html; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 		1A10FCCA1FAEA7B300D30727 /* NoMAD-ADAuthTests */ = {
 			isa = PBXGroup;
 			children = (
+				9C00CCFD1FD5B8E900B5B36A /* SessionManagerTests.swift */,
 				1A10FCCB1FAEA7B300D30727 /* NoMAD_ADAuthTests.swift */,
 				1AB3EF621FB698CC002D5F99 /* ADUserTests.swift */,
 				1A10FCCD1FAEA7B300D30727 /* Info.plist */,
@@ -621,6 +624,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1A10FCCC1FAEA7B300D30727 /* NoMAD_ADAuthTests.swift in Sources */,
+				9C00CCFE1FD5B8E900B5B36A /* SessionManagerTests.swift in Sources */,
 				1AB3EF631FB698CC002D5F99 /* ADUserTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

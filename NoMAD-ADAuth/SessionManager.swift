@@ -20,17 +20,15 @@ public struct NoMADSessionUserObject {
     var userInfo: ADUserRecord?
 }
 
-// singleton for this
-
-let sm = SessionManager()
-
 // class to keep track and manage multiple AD sessions simultaneously
 
 public class SessionManager: NoMADUserSessionDelegate {
-    
-    // some setup
-    
-    public var sessions = [String: NoMADSessionUserObject]()
+
+    /// The default instance of `SessionManager` to be used.
+    public static let shared = SessionManager()
+
+    public var sessions = [String : NoMADSessionUserObject]()
+
     let dateFormatter = DateFormatter()
     let myWorkQueue = DispatchQueue(label: "menu.nomad.NoMADADAuth.sessionmanager.background_work_queue", attributes: [])
     
@@ -42,25 +40,7 @@ public class SessionManager: NoMADUserSessionDelegate {
         dateFormatter.timeStyle = .short
         
         // get all of the current principals with tickets
-        
-        klistUtil.klist()
-        let principals = klistUtil.returnPrincipals()
-        
-        if principals.count > 0 {
-            for user in principals {
-                
-                // set up a session object for each user
-                
-                let userSession = NoMADSession.init(domain: user.components(separatedBy: "@").last?.lowercased() ?? "", user: user, type: .AD)
-                
-                myWorkQueue.async {
-                    userSession.delegate = self
-                    userSession.userInfo()
-               
-                }
-                sessions[user] = NoMADSessionUserObject.init(userPrincipal: user, session: userSession, aging: false, expiration: nil, daysToGo: nil, userInfo: nil)
-            }
-        }
+        self.getList()
     }
     
     // udpate the list
@@ -128,7 +108,7 @@ public class SessionManager: NoMADUserSessionDelegate {
         
         if update {
             // update the information
-        
+
             session.delegate = self
             session.getUserInformation()
         }
@@ -158,7 +138,7 @@ public class SessionManager: NoMADUserSessionDelegate {
         // we shouldn't not already know about this user, but we'll double check
         
         if sessions[user.userPrincipal] == nil {
-           return
+            return
         }
         
         if user.passwordExpire != nil && user.passwordAging! {
@@ -169,6 +149,4 @@ public class SessionManager: NoMADUserSessionDelegate {
             sessions[user.userPrincipal]?.aging = false
         }
     }
-    
-    
 }
