@@ -454,7 +454,7 @@ public class NoMADSession : NSObject {
         
         if ldaptype == .AD {
             
-            let attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            let attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
             // "maxPwdAge" // passwordExpirationLength
             
             let searchTerm = "sAMAccountName=" + userPrincipalShort
@@ -466,6 +466,8 @@ public class NoMADSession : NSObject {
                 let userPasswordUACFlag = ldapResult["userAccountControl"] ?? ""
                 let userHomeTemp = ldapResult["homeDirectory"] ?? ""
                 let userDisplayName = ldapResult["displayName"] ?? ""
+                let firstName = ldapResult["givenName"] ?? ""
+                let lastName = ldapResult["sn"] ?? ""
                 var groupsTemp = ldapResult["memberOf"]
                 let userEmail = ldapResult["mail"] ?? ""
                 let UPN = ldapResult["userPrincipalName"] ?? ""
@@ -569,7 +571,7 @@ public class NoMADSession : NSObject {
                 
                 // pack up user record
                 
-                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: userDisplayName.components(separatedBy: "").first!, lastName: userDisplayName.components(separatedBy: "").last!, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain)
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain)
                 
             } else {
                 myLogger.logit(.base, message: "Unable to find user.")
