@@ -19,7 +19,7 @@ public protocol NoMADUserSession {
 
 public protocol NoMADUserSessionDelegate: class {
     func NoMADAuthenticationSucceded()
-    func NoMADAuthenticationFailed(error: Error, description: String)
+    func NoMADAuthenticationFailed(error: NoMADSessionError, description: String)
     func NoMADUserInformation(user: ADUserRecord)
 }
 

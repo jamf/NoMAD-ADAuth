@@ -129,7 +129,7 @@ public class SessionManager: NoMADUserSessionDelegate {
         // we'll never auth here
     }
     
-    public func NoMADAuthenticationFailed(error: Error, description: String) {
+    public func NoMADAuthenticationFailed(error: NoMADSessionError, description: String) {
         // we'll never auth here
     }
     
