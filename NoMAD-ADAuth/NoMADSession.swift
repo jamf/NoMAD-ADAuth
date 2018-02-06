@@ -165,9 +165,10 @@ public class NoMADSession : NSObject {
         while ( !self.resolver.finished ) {
             RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
         }
-        
+
         if (self.resolver.error == nil) {
-            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
+//            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
+            myLogger.logit(.debug, message: "Did Receive Query Result: ")
             let records = self.resolver.queryResults as! [[String:AnyObject]]
             for record: Dictionary in records {
                 let host = record["target"] as! String
@@ -800,7 +801,8 @@ public class NoMADSession : NSObject {
     // This function builds new Kerb prefs with KDC included if possible
     
     private func checkKpasswdServer() -> Bool {
-        
+        myLogger.logit(.debug, message: "Searching for kerberos srv records")
+
         let myKpasswdServers = getSRVRecords(domain, srv_type: "_kpasswd._tcp.")
         myLogger.logit(.debug, message: "Current Server is: " + currentServer)
         myLogger.logit(.debug, message: "Kpasswd Servers are: " + myKpasswdServers.description)
@@ -953,10 +955,15 @@ extension NoMADSession: NoMADUserSession {
     public func changePassword() {
         // change user's password
         // check kerb prefs - otherwise we can get an error here if not set
+        myLogger.logit(.debug, message: "Checking kpassword server.")
         _ = checkKpasswdServer()
 
         // set up the KerbUtil
+        myLogger.logit(.debug, message: "Init KerbUtil.")
+
         let kerbUtil = KerbUtil()
+        myLogger.logit(.debug, message: "Change password.")
+
         let kerbError = kerbUtil.changeKerbPassword(oldPass, newPass, userPrincipal)
 
         while !kerbUtil.finished {
