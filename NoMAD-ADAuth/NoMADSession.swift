@@ -167,8 +167,7 @@ public class NoMADSession : NSObject {
         }
 
         if (self.resolver.error == nil) {
-//            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
-            myLogger.logit(.debug, message: "Did Receive Query Result: ")
+            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
             let records = self.resolver.queryResults as! [[String:AnyObject]]
             for record: Dictionary in records {
                 let host = record["target"] as! String
