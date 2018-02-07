@@ -95,7 +95,7 @@ extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* passwor
     }
     //   CFRelease(error);
     self.finished = YES;
-    return @"";
+    return nil;
 }
 
 - (int) checkPassword:(NSString *)myPassword {

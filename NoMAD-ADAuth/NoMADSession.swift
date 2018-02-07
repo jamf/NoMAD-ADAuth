@@ -983,7 +983,7 @@ extension NoMADSession: NoMADUserSession {
         let kerbUtil = KerbUtil()
         myLogger.logit(.debug, message: "Change password.")
 
-        let kerbError = kerbUtil.changeKerbPassword(oldPass, newPass, userPrincipal)
+        let error = kerbUtil.changeKerbPassword(oldPass, newPass, userPrincipal)
 
         while !kerbUtil.finished {
             RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
@@ -993,10 +993,10 @@ extension NoMADSession: NoMADUserSession {
         oldPass = ""
         newPass = ""
 
-        if let kerbError = kerbError {
+        if let error = error {
             // error
             state = .kerbError
-            delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError)
+            delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: error)
         } else {
             delegate?.NoMADAuthenticationSucceded()
         }
