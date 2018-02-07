@@ -137,7 +137,16 @@ public class NoMADSession : NSObject {
     // Return the current server
     
     var currentServer: String {
+        myLogger.logit(.debug, message: "Computed currentServer accessed in state: \(String(describing: state))")
+
         if state != .offDomain {
+
+            if hosts.isEmpty {
+                myLogger.logit(.debug, message: "Make sure we have LDAP servers")
+                getHosts(domain)
+            }
+            myLogger.logit(.debug, message: "Lookup the current LDAP host in: \(String(describing: hosts))")
+
             return hosts[current].host
         } else {
             return ""
@@ -168,15 +177,21 @@ public class NoMADSession : NSObject {
 
         if (self.resolver.error == nil) {
             myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
+            myLogger.logit(.debug, message: "Copy \(resolver.queryResults.count) result to records")
             let records = self.resolver.queryResults as! [[String:AnyObject]]
+            myLogger.logit(.debug, message: "records dict ready: " + records.debugDescription)
             for record: Dictionary in records {
+                myLogger.logit(.debug, message: "Adding: \(String(describing: record["target"]))")
                 let host = record["target"] as! String
+                myLogger.logit(.debug, message: "Created host: " + host)
                 results.append(host)
+                myLogger.logit(.debug, message: "Added host to results: \(String(describing: results))")
             }
             
         } else {
             myLogger.logit(.debug, message: "Query Error: " + self.resolver.error.localizedDescription)
         }
+        myLogger.logit(.debug, message: "Returning results: \(String(describing: results))")
         return results
     }
     
@@ -800,12 +815,17 @@ public class NoMADSession : NSObject {
     // This function builds new Kerb prefs with KDC included if possible
     
     private func checkKpasswdServer() -> Bool {
+        if hosts.isEmpty {
+        myLogger.logit(.debug, message: "Make sure we have LDAP servers")
+            getHosts(domain)
+        }
+
         myLogger.logit(.debug, message: "Searching for kerberos srv records")
 
         let myKpasswdServers = getSRVRecords(domain, srv_type: "_kpasswd._tcp.")
+        myLogger.logit(.debug, message: "New kpasswd Servers are: " + myKpasswdServers.description)
         myLogger.logit(.debug, message: "Current Server is: " + currentServer)
-        myLogger.logit(.debug, message: "Kpasswd Servers are: " + myKpasswdServers.description)
-        
+
         if myKpasswdServers.contains(currentServer) {
             myLogger.logit(.debug, message: "Found kpasswd server that matches current LDAP server.")
             myLogger.logit(.debug, message: "Attempting to set kpasswd server to ensure Kerberos and LDAP are in sync.")
