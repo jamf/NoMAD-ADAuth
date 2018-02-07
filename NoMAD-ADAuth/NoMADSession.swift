@@ -989,17 +989,21 @@ extension NoMADSession: NoMADUserSession {
             RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
         }
 
-        // scrub the passwords
-        oldPass = ""
-        newPass = ""
+
 
         if let error = error {
             // error
             state = .kerbError
             delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: error)
         } else {
-            delegate?.NoMADAuthenticationSucceded()
+            // If the password change worked then we are online. Reauthenticate with new password.
+            userPass = newPass
+            authenticate(authTestOnly: false)
         }
+
+        // scrub the passwords
+        oldPass = ""
+        newPass = ""
 
         // clean the kerb prefs so we don't reuse the KDCs
         cleanKerbPrefs()
