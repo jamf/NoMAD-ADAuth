@@ -12,6 +12,10 @@ import NoMADPRIVATE
 @testable import NoMAD_ADAuth
 
 class ADUserTests : XCTestCase, NoMADUserSessionDelegate {
+    func NoMADAuthenticationFailed(error: NoMADSessionError, description: String) {
+        NSLog("%@", "Authentication failed called.")
+    }
+
     
     // some setup
     

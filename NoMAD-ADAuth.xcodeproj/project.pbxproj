@@ -298,8 +298,7 @@
 				9C4A11661FD1B2D6009EC7B4 /* Protocols.html */,
 				9C4A11671FD1B2D6009EC7B4 /* Protocols */,
 			);
-			name = docs;
-			path = "../NoLo-AD/docs";
+			path = docs;
 			sourceTree = "<group>";
 		};
 		9C4A112A1FD1B2D6009EC7B4 /* css */ = {
