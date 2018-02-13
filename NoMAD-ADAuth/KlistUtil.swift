@@ -90,7 +90,7 @@ class KlistUtil {
         krb5_init_secure_context(&context)
         
         var oCache : krb5_ccache? = nil
-        var cache = UnsafeMutablePointer<Any>.init(oCache)
+        _ = UnsafeMutablePointer<Any>.init(oCache)
         
         let cname = krb5_cc_default_name(context)
         let defaultName = String(cString: cname!).replacingOccurrences(of: "API:", with: "")
@@ -123,14 +123,14 @@ class KlistUtil {
         
         gss_iter_creds(&min_stat, 0, nil, { a, cred in
             
-            var min_stat1 = OM_uint32()
-            var oidStr = gss_buffer_desc()
+            _ = OM_uint32()
+            _ = gss_buffer_desc()
             
             if cred != nil {
                 let name = GSSCredentialCopyName(cred!)
                 if name != nil {
                     let displayName = GSSNameCreateDisplayString(name!)!
-                    let displayNameString = String(describing: displayName.takeRetainedValue()) as! String
+                    let displayNameString = String(describing: displayName.takeRetainedValue())
                     print(displayNameString)
                     let lifetime = GSSCredentialGetLifetime(cred!)
                     let expiretime = Date().addingTimeInterval(TimeInterval(lifetime))
