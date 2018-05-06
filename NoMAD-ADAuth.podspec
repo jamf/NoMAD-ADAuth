@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name         = "NoMAD-ADAuth"
-  s.version      = "1.0.0"
+  s.version      = "1.0.1"
   s.summary      = "NoMAD AD Authentication Framework"
   s.description  = <<-DESC
 The NoMAD AD Authentication Framework allows you to present a username and password to the Framework 
