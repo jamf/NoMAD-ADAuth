@@ -313,7 +313,7 @@ public class NoMADSession : NSObject {
             myLogger.logit(.base, message: "All DCs in are dead! You should really fix this.")
             state = .offDomain
         } else {
-            state = .networkLookup
+            state = .success
         }
     }
     
