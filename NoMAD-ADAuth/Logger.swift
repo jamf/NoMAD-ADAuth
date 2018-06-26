@@ -56,6 +56,7 @@ class Logger {
         let defaults = UserDefaults.init(suiteName: "menu.nomad.login.ad")
         
         if defaults?.bool(forKey: "Verbose") ?? false {
+            NSLog("Enaging verbose logging")
             loglevel = .debug
         } else {
             loglevel = .base
