@@ -3,7 +3,7 @@
 //  NoMAD
 //
 //  Created by Joel Rennich on 9/11/17.
-//  Copyright © 2017 Orchard & Grove Inc. All rights reserved.
+//  Copyright © 2018 Orchard & Grove Inc. All rights reserved.
 //
 
 import Foundation
