@@ -155,6 +155,24 @@ public class NoMADSession : NSObject {
     
     // MARK: DNS Main
     
+    fileprivate func parseSRVReply(_ results: inout [String]) {
+        if (self.resolver.error == nil) {
+            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
+            myLogger.logit(.debug, message: "Copy \(resolver.queryResults.count) result to records")
+            let records = self.resolver.queryResults as! [[String:AnyObject]]
+            myLogger.logit(.debug, message: "records dict ready: " + records.debugDescription)
+            for record: Dictionary in records {
+                myLogger.logit(.debug, message: "Adding: \(String(describing: record["target"]))")
+                let host = record["target"] as! String
+                myLogger.logit(.debug, message: "Created host: " + host)
+                results.append(host)
+                myLogger.logit(.debug, message: "Added host to results: \(String(describing: results))")
+            }
+        } else {
+            myLogger.logit(.debug, message: "Query Error: " + self.resolver.error.localizedDescription)
+        }
+    }
+
     func getSRVRecords(_ domain: String, srv_type: String="_ldap._tcp.") -> [String] {
         self.resolver.queryType = "SRV"
         
@@ -175,26 +193,40 @@ public class NoMADSession : NSObject {
             RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
         }
 
-        if (self.resolver.error == nil) {
-            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
-            myLogger.logit(.debug, message: "Copy \(resolver.queryResults.count) result to records")
-            let records = self.resolver.queryResults as! [[String:AnyObject]]
-            myLogger.logit(.debug, message: "records dict ready: " + records.debugDescription)
-            for record: Dictionary in records {
-                myLogger.logit(.debug, message: "Adding: \(String(describing: record["target"]))")
-                let host = record["target"] as! String
-                myLogger.logit(.debug, message: "Created host: " + host)
-                results.append(host)
-                myLogger.logit(.debug, message: "Added host to results: \(String(describing: results))")
-            }
-            
-        } else {
-            myLogger.logit(.debug, message: "Query Error: " + self.resolver.error.localizedDescription)
-        }
+        parseSRVReply(&results)
         myLogger.logit(.debug, message: "Returning results: \(String(describing: results))")
         return results
     }
     
+    fileprivate func parseHostsReply() {
+        if (self.resolver.error == nil) {
+            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
+
+            var newHosts = [NoMADLDAPServer]()
+            let records = self.resolver.queryResults as! [[String:AnyObject]]
+            for record: Dictionary in records {
+                let host = record["target"] as! String
+                let priority = record["priority"] as! Int
+                let weight = record["weight"] as! Int
+                // let port = record["port"] as! Int
+                let currentServer = NoMADLDAPServer(host: host, status: "found", priority: priority, weight: weight, timeStamp: Date())
+                newHosts.append(currentServer)
+            }
+
+            // now to sort them
+
+            self.hosts = newHosts.sorted { (x, y) -> Bool in
+                return ( x.priority <= y.priority )
+            }
+            state = .success
+
+        } else {
+            myLogger.logit(.debug, message: "Query Error: " + self.resolver.error.localizedDescription)
+            state = .siteFailure
+            self.hosts.removeAll()
+        }
+    }
+
     fileprivate func getHosts(_ domain: String ) {
         
         self.resolver.queryType = "SRV"
@@ -215,32 +247,7 @@ public class NoMADSession : NSObject {
             myLogger.logit(.debug, message: "Waiting for DNS query to return.")
         }
         
-        if (self.resolver.error == nil) {
-            myLogger.logit(.debug, message: "Did Receive Query Result: " + self.resolver.queryResults.description)
-            
-            var newHosts = [NoMADLDAPServer]()
-            let records = self.resolver.queryResults as! [[String:AnyObject]]
-            for record: Dictionary in records {
-                let host = record["target"] as! String
-                let priority = record["priority"] as! Int
-                let weight = record["weight"] as! Int
-                // let port = record["port"] as! Int
-                let currentServer = NoMADLDAPServer(host: host, status: "found", priority: priority, weight: weight, timeStamp: Date())
-                newHosts.append(currentServer)
-            }
-            
-            // now to sort them
-            
-            self.hosts = newHosts.sorted { (x, y) -> Bool in
-                return ( x.priority <= y.priority )
-            }
-            state = .success
-            
-        } else {
-            myLogger.logit(.debug, message: "Query Error: " + self.resolver.error.localizedDescription)
-            state = .siteFailure
-            self.hosts.removeAll()
-        }
+        parseHostsReply()
     }
     
     fileprivate func testHosts() {
@@ -456,6 +463,109 @@ public class NoMADSession : NSObject {
         return myResult
     }
     
+    fileprivate func cleanGroups(_ groupsTemp: String?, _ groups: inout [String]) {
+        // clean up groups
+
+        if groupsTemp != nil {
+            let groupsArray = groupsTemp!.components(separatedBy: ";")
+            for group in groupsArray {
+                let a = group.components(separatedBy: ",")
+                var b = a[0].replacingOccurrences(of: "CN=", with: "") as String
+                b = b.replacingOccurrences(of: "cn=", with: "") as String
+
+                if b != "" {
+                    groups.append(b)
+                }
+            }
+            myLogger.logit(.info, message: "You are a member of: " + groups.joined(separator: ", ") )
+        }
+    }
+
+    fileprivate func lookupRecursiveGroups(_ dn: String, _ groupsTemp: inout String?) {
+        // now to get recursive groups if asked
+
+        if recursiveGroupLookup {
+            let attributes = ["name"]
+            let searchTerm = "(member:1.2.840.113556.1.4.1941:=" + dn.replacingOccurrences(of: "\\", with: "\\\\5c") + ")"
+            if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
+                groupsTemp = ""
+                for item in ldifResult {
+                    for components in item {
+                        if components.key == "dn" {
+                            groupsTemp?.append(components.value + ";")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fileprivate func parseExpirationDate(_ computedExpireDateRaw: String?, _ passwordAging: inout Bool, _ userPasswordExpireDate: inout Date, _ userPasswordUACFlag: String, _ serverPasswordExpirationDefault: inout Double, _ tempPasswordSetDate: Date) {
+        if computedExpireDateRaw != nil {
+            // Windows Server 2008 and Newer
+            if Int(computedExpireDateRaw!) ==  Int.max {
+
+                // Password doesn't expire
+                passwordAging = false
+
+                // Set expiration to far away from now
+                userPasswordExpireDate = Date.distantFuture
+
+            } else if (Int(computedExpireDateRaw!) == 0) {
+
+                // password needs to be reset
+                passwordAging = true
+
+                // set expirate to long ago
+                userPasswordExpireDate = Date.distantPast
+
+            } else {
+                // Password expires
+                passwordAging = true
+                userPasswordExpireDate = NSDate(timeIntervalSince1970: (Double(computedExpireDateRaw!)!)/10000000-11644473600) as Date
+            }
+        } else {
+            // Older then Windows Server 2008
+            // need to go old skool
+            var passwordExpirationLength: String
+            let attribute = "maxPwdAge"
+
+            if let ldifResult = try? getLDAPInformation([attribute], baseSearch: true) {
+                passwordExpirationLength = getAttributeForSingleRecordFromCleanedLDIF(attribute, ldif: ldifResult)
+            } else {
+                passwordExpirationLength = ""
+            }
+
+            if ( passwordExpirationLength.count > 15 ) {
+                passwordAging = false
+            } else if ( passwordExpirationLength != "" ) && userPasswordUACFlag != "" {
+                if ~~( Int(userPasswordUACFlag)! & 0x10000 ) {
+                    passwordAging = false
+                } else {
+                    serverPasswordExpirationDefault = Double(abs(Int(passwordExpirationLength)!)/10000000)
+                    passwordAging = true
+                }
+            } else {
+                serverPasswordExpirationDefault = Double(0)
+                passwordAging = false
+            }
+            userPasswordExpireDate = tempPasswordSetDate.addingTimeInterval(serverPasswordExpirationDefault)
+        }
+    }
+
+    fileprivate func extractedFunc(_ attributes: [String], _ searchTerm: String) {
+        if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
+            let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
+            _ = ldapResult["homeDirectory"] ?? ""
+            _ = ldapResult["displayName"] ?? ""
+            _ = ldapResult["memberOf"]
+            _ = ldapResult["mail"] ?? ""
+            _ = ldapResult["uid"] ?? ""
+        } else {
+            myLogger.logit(.base, message: "Unable to find user.")
+        }
+    }
+    
     func getUserInformation() {
         
         // some setup
@@ -492,92 +602,14 @@ public class NoMADSession : NSObject {
                     // we didn't get a result
                 }
                 
-                // now to get recursive groups if asked
-                
-                if recursiveGroupLookup {
-                    let attributes = ["name"]
-                    let searchTerm = "(member:1.2.840.113556.1.4.1941:=" + dn.replacingOccurrences(of: "\\", with: "\\\\5c") + ")"
-                    if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {                        
-                        groupsTemp = ""
-                        for item in ldifResult {
-                            for components in item {
-                                if components.key == "dn" {
-                                    groupsTemp?.append(components.value + ";")
-                                }
-                            }
-                        }
-                    }
-                }
+                lookupRecursiveGroups(dn, &groupsTemp)
                 
                 if (passwordSetDate != "") && (passwordSetDate != nil ) {
                     tempPasswordSetDate = NSDate(timeIntervalSince1970: (Double(passwordSetDate!)!)/10000000-11644473600) as Date
                 }
-                if computedExpireDateRaw != nil {
-                    // Windows Server 2008 and Newer
-                    if Int(computedExpireDateRaw!) ==  Int.max {
-                        
-                        // Password doesn't expire
-                        passwordAging = false
-                        
-                        // Set expiration to far away from now
-                        userPasswordExpireDate = Date.distantFuture
-                        
-                    } else if (Int(computedExpireDateRaw!) == 0) {
-                        
-                        // password needs to be reset
-                        passwordAging = true
-                        
-                        // set expirate to long ago
-                        userPasswordExpireDate = Date.distantPast
-                        
-                    } else {
-                        // Password expires
-                        passwordAging = true
-                        userPasswordExpireDate = NSDate(timeIntervalSince1970: (Double(computedExpireDateRaw!)!)/10000000-11644473600) as Date
-                    }
-                } else {
-                    // Older then Windows Server 2008
-                    // need to go old skool
-                    var passwordExpirationLength: String
-                    let attribute = "maxPwdAge"
-                    
-                    if let ldifResult = try? getLDAPInformation([attribute], baseSearch: true) {
-                        passwordExpirationLength = getAttributeForSingleRecordFromCleanedLDIF(attribute, ldif: ldifResult)
-                    } else {
-                        passwordExpirationLength = ""
-                    }
-                    
-                    if ( passwordExpirationLength.count > 15 ) {
-                        passwordAging = false
-                    } else if ( passwordExpirationLength != "" ) && userPasswordUACFlag != "" {
-                        if ~~( Int(userPasswordUACFlag)! & 0x10000 ) {
-                            passwordAging = false
-                        } else {
-                            serverPasswordExpirationDefault = Double(abs(Int(passwordExpirationLength)!)/10000000)
-                            passwordAging = true
-                        }
-                    } else {
-                        serverPasswordExpirationDefault = Double(0)
-                        passwordAging = false
-                    }
-                    userPasswordExpireDate = tempPasswordSetDate.addingTimeInterval(serverPasswordExpirationDefault)
-                }
+                parseExpirationDate(computedExpireDateRaw, &passwordAging, &userPasswordExpireDate, userPasswordUACFlag, &serverPasswordExpirationDefault, tempPasswordSetDate)
                 
-                // clean up groups
-                
-                if groupsTemp != nil {
-                    let groupsArray = groupsTemp!.components(separatedBy: ";")
-                    for group in groupsArray {
-                        let a = group.components(separatedBy: ",")
-                        var b = a[0].replacingOccurrences(of: "CN=", with: "") as String
-                        b = b.replacingOccurrences(of: "cn=", with: "") as String
-                        
-                        if b != "" {
-                            groups.append(b)
-                        }
-                    }
-                    myLogger.logit(.info, message: "You are a member of: " + groups.joined(separator: ", ") )
-                }
+                cleanGroups(groupsTemp, &groups)
                 
                 // clean up the home
                 
@@ -599,16 +631,7 @@ public class NoMADSession : NSObject {
             
             let searchTerm = "uid=" + userPrincipalShort
             
-            if let ldifResult = try? getLDAPInformation(attributes, searchTerm: searchTerm) {
-                let ldapResult = getAttributesForSingleRecordFromCleanedLDIF(attributes, ldif: ldifResult)
-                _ = ldapResult["homeDirectory"] ?? ""
-                _ = ldapResult["displayName"] ?? ""
-                _ = ldapResult["memberOf"]
-                _ = ldapResult["mail"] ?? ""
-                _ = ldapResult["uid"] ?? ""
-            } else {
-                myLogger.logit(.base, message: "Unable to find user.")
-            }
+            extractedFunc(attributes, searchTerm)
         }
         
         // pack up the user record
