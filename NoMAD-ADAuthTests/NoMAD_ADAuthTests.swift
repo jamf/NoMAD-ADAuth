@@ -3,7 +3,7 @@
 //  NoMAD-ADAuthTests
 //
 //  Created by Joel Rennich on 11/4/17.
-//  Copyright © 2017 Joel Rennich. All rights reserved.
+//  Copyright © 2018 Joel Rennich. All rights reserved.
 //
 
 import XCTest

@@ -3,7 +3,7 @@
 //  NoMAD
 //
 //  Created by Joel Rennich on 9/10/17.
-//  Copyright © 2017 Joel Rennich. All rights reserved.
+//  Copyright © 2018 Joel Rennich. All rights reserved.
 //
 
 import Foundation
