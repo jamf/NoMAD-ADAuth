@@ -23,7 +23,6 @@
 		1AB3EF051FB688E6002D5F99 /* DNSResolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF031FB688E6002D5F99 /* DNSResolver.m */; };
 		1AB3EF071FB68904002D5F99 /* UserRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF061FB68904002D5F99 /* UserRecord.swift */; };
 		1AB3EF091FB68922002D5F99 /* NoMADSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF081FB68922002D5F99 /* NoMADSession.swift */; };
-		1AB3EF5E1FB6962A002D5F99 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A10FCCD1FAEA7B300D30727 /* Info.plist */; };
 		1AB3EF5F1FB69637002D5F99 /* GSS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF351FB68C18002D5F99 /* GSS.framework */; };
 		1AB3EF601FB6963B002D5F99 /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF361FB68F37002D5F99 /* libresolv.tbd */; };
 		1AB3EF611FB6963D002D5F99 /* Kerberos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AB3EF341FB68BC4002D5F99 /* Kerberos.framework */; };
@@ -291,11 +290,12 @@
 				TargetAttributes = {
 					1A10FCBC1FAEA7B300D30727 = {
 						CreatedOnToolsVersion = 9.1;
-						LastSwiftMigration = 0910;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 					1A10FCC51FAEA7B300D30727 = {
 						CreatedOnToolsVersion = 9.1;
+						LastSwiftMigration = 1000;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -323,7 +323,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1AB3EF5E1FB6962A002D5F99 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -413,6 +412,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = VRPY9KHGX6;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -477,6 +477,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = VRPY9KHGX6;
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -525,7 +526,7 @@
 				SKIP_INSTALL = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth/**";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -556,7 +557,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = NO;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/NOMAD-ADAuth/**";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
@@ -572,7 +573,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuthTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -588,7 +589,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuthTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_VERSION = 4.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};

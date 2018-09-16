@@ -190,7 +190,7 @@ public class NoMADSession : NSObject {
         self.resolver.startQuery()
         
         while ( !self.resolver.finished ) {
-            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+            RunLoop.current.run(mode: RunLoop.Mode.default, before: Date.distantFuture)
         }
 
         parseSRVReply(&results)
@@ -243,7 +243,7 @@ public class NoMADSession : NSObject {
         self.resolver.startQuery()
         
         while ( !self.resolver.finished ) {
-            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+            RunLoop.current.run(mode: RunLoop.Mode.default, before: Date.distantFuture)
             myLogger.logit(.debug, message: "Waiting for DNS query to return.")
         }
         
@@ -964,7 +964,7 @@ extension NoMADSession: NoMADUserSession {
         //TODO: Make this not a war crime - Josh
         // wait for auth to finish
         while !kerbUtil.finished {
-            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+            RunLoop.current.run(mode: RunLoop.Mode.default, before: Date.distantFuture)
         }
 
         // scrub the password field
@@ -1009,7 +1009,7 @@ extension NoMADSession: NoMADUserSession {
         let error = kerbUtil.changeKerbPassword(oldPass, newPass, userPrincipal)
 
         while !kerbUtil.finished {
-            RunLoop.current.run(mode: RunLoopMode.defaultRunLoopMode, before: Date.distantFuture)
+            RunLoop.current.run(mode: RunLoop.Mode.default, before: Date.distantFuture)
         }
 
 
