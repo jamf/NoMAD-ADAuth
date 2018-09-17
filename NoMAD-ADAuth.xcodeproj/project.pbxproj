@@ -286,7 +286,7 @@
 			attributes = {
 				LastSwiftUpdateCheck = 0910;
 				LastUpgradeCheck = 0930;
-				ORGANIZATIONNAME = "Joel Rennich";
+				ORGANIZATIONNAME = "Orchard & Grove Inc.";
 				TargetAttributes = {
 					1A10FCBC1FAEA7B300D30727 = {
 						CreatedOnToolsVersion = 9.1;

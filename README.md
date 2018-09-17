@@ -2,7 +2,7 @@
 
 Congratulations, you're about to experience the blood, sweat and tears of the thousands of development hours that have gone into NoMAD's Active Directory authentication! This framework will allow you to easily add in robust AD integration to any macOS application.
 
-This framework is written primarily in Swift 4 on Xcode 9.1 and while much of the functionality is working, it should be considered beta at this point.
+This framework is written primarily in Swift 4.2 on Xcode 10 and while much of the functionality is working, it should be considered beta at this point.
 
 ## Overview
 
