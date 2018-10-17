@@ -981,6 +981,9 @@ extension NoMADSession: NoMADUserSession {
             case "Wrong realm" :
                 delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.wrongRealm, description: kerbError)
                 break
+            case _ where kerbError.range(of: "unable to reach any KDC in realm") != nil :
+                delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.OffDomain, description: kerbError)
+                break
             default:
                 delegate?.NoMADAuthenticationFailed(error: NoMADSessionError.KerbError, description: kerbError)
             }
