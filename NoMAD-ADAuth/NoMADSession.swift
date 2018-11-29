@@ -703,7 +703,9 @@ public class NoMADSession : NSObject {
                     // base64
                     let tempAttributeValue = attributeValue.substring(from: attributeValue.index(after: attributeValue.startIndex)).trim()
                     if (Data(base64Encoded: tempAttributeValue, options: NSData.Base64DecodingOptions.init(rawValue: 0)) != nil) {
-                        attributeValue = tempAttributeValue
+                        //attributeValue = tempAttributeValue
+                        
+                        attributeValue = String.init(data: Data.init(base64Encoded: tempAttributeValue)!, encoding: String.Encoding.utf8) ?? ""
                     } else {
                         attributeValue = ""
                     }
