@@ -42,6 +42,7 @@ public struct ADUserRecord: NoMADUserRecord, Equatable {
     public var updatedLast: Date
     public var domain: String
     public var cn: String
+    public var customAttributes: [String:Any]?
     
     public static func ==(lhs: ADUserRecord, rhs: ADUserRecord) -> Bool {
         return (lhs.firstName == rhs.firstName && lhs.lastName == rhs.lastName)
