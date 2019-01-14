@@ -77,6 +77,7 @@ public class NoMADSession : NSObject {
     
     private var current = 0                                 // current LDAP server from hosts
     public var home = ""                                    // current active user home
+    public var ldapServers : [String]?                      // static DCs to use instead of looking up via DNS records
     
     
     // Base configuration prefs
@@ -215,9 +216,16 @@ public class NoMADSession : NSObject {
 
             // now to sort them
 
+            let fallbackHosts = self.hosts
+            
             self.hosts = newHosts.sorted { (x, y) -> Bool in
                 return ( x.priority <= y.priority )
             }
+            
+            // add back in the globally avilable DCs in case the site has gone bust
+            // credit to @mosen for this brilliant idea
+            
+            self.hosts.append(contentsOf: fallbackHosts)
             state = .success
 
         } else {
@@ -228,6 +236,35 @@ public class NoMADSession : NSObject {
     }
 
     fileprivate func getHosts(_ domain: String ) {
+        
+        // check to see if we have static hosts
+        
+        if let servers = ldapServers {
+            
+            myLogger.logit(.debug, message: "Using static DC list.")
+            var newHosts = [NoMADLDAPServer]()
+            for server in servers {
+                
+                let host = server
+                let priority = 100
+                let weight = 100
+                // let port = record["port"] as! Int
+                let currentServer = NoMADLDAPServer(host: host, status: "found", priority: priority, weight: weight, timeStamp: Date())
+                newHosts.append(currentServer)
+                
+                self.hosts = newHosts.sorted { (x, y) -> Bool in
+                    return ( x.priority <= y.priority )
+                }
+                state = .success
+                
+                // fake a site to put something in
+                
+                site = "STATIC"
+                
+                return
+            }
+            
+        }
         
         self.resolver.queryType = "SRV"
         
@@ -579,7 +616,7 @@ public class NoMADSession : NSObject {
         
         if ldaptype == .AD {
             
-            let attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            let attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
             // "maxPwdAge" // passwordExpirationLength
             
             let searchTerm = "sAMAccountName=" + userPrincipalShort
@@ -597,6 +634,7 @@ public class NoMADSession : NSObject {
                 let userEmail = ldapResult["mail"] ?? ""
                 let UPN = ldapResult["userPrincipalName"] ?? ""
                 let dn = ldapResult["dn"] ?? ""
+                let cn = ldapResult["cn"] ?? ""
                 
                 if ldapResult.count == 0 {
                     // we didn't get a result
@@ -618,7 +656,7 @@ public class NoMADSession : NSObject {
                 
                 // pack up user record
                 
-                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain)
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn)
                 
             } else {
                 myLogger.logit(.base, message: "Unable to find user.")
@@ -703,7 +741,9 @@ public class NoMADSession : NSObject {
                     // base64
                     let tempAttributeValue = attributeValue.substring(from: attributeValue.index(after: attributeValue.startIndex)).trim()
                     if (Data(base64Encoded: tempAttributeValue, options: NSData.Base64DecodingOptions.init(rawValue: 0)) != nil) {
-                        attributeValue = tempAttributeValue
+                        //attributeValue = tempAttributeValue
+                        
+                        attributeValue = String.init(data: Data.init(base64Encoded: tempAttributeValue)!, encoding: String.Encoding.utf8) ?? ""
                     } else {
                         attributeValue = ""
                     }
