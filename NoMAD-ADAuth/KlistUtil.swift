@@ -15,7 +15,7 @@ import NoMADPRIVATE
 // TODO: Handle multiple caches at the same time
 // TODO: pack everything into one structure
 
-struct Ticket {
+public struct Ticket {
     var expired: Bool
     var expires: Date
     var defaultCache: Bool
@@ -26,23 +26,23 @@ struct Ticket {
 
 // singleton for the class
 
-let klistUtil = KlistUtil()
+public let klistUtil = KlistUtil()
 
-class KlistUtil {
+public class KlistUtil {
     
     var dateFormatter = DateFormatter()
-    var tickets = [String:Ticket]()
+    public var tickets = [String:Ticket]()
     // var tempDict = [String:Ticket]()
     
     
-    var defaultPrincipal: String?
-    var defaultExpires: Date?
+    public var defaultPrincipal: String?
+    public var defaultExpires: Date?
     
     init() {
         dateFormatter.dateFormat = "yyyyMMddHHmmss"
     }
     
-    func returnTickets() -> [Ticket] {
+    public func returnTickets() -> [Ticket] {
         
         // update the tickets
         
@@ -59,22 +59,22 @@ class KlistUtil {
     
     // convenience function to return all principals
     
-    func returnPrincipals() -> [String] {
+    public func returnPrincipals() -> [String] {
         klist()
         return tickets.keys.sorted()
     }
     
     // convenience function to return default principal
     
-    func returnDefaultPrincipal() -> String {
+    public func returnDefaultPrincipal() -> String {
         return defaultPrincipal ?? "No Ticket"
     }
     
-    func returnDefaultExpiration() -> Date? {
+    public func returnDefaultExpiration() -> Date? {
         return defaultExpires
     }
     
-    func klist() {
+    public func klist() {
         
         let sema = DispatchSemaphore(value: 0)
         
@@ -131,10 +131,10 @@ class KlistUtil {
                 if name != nil {
                     let displayName = GSSNameCreateDisplayString(name!)!
                     let displayNameString = String(describing: displayName.takeRetainedValue())
-                    print(displayNameString)
+                    //print(displayNameString)
                     let lifetime = GSSCredentialGetLifetime(cred!)
                     let expiretime = Date().addingTimeInterval(TimeInterval(lifetime))
-                    print(self.tickets[displayNameString])
+                    //print(self.tickets[displayNameString])
                     self.tickets[displayNameString]?.expired = false
                     self.tickets[displayNameString]?.expires = expiretime
                     self.tickets[displayNameString]?.GSSItem = cred
@@ -168,7 +168,7 @@ class KlistUtil {
     
     // function to delete a kerb ticket
     
-    func kdestroy(princ: String = "" ) {
+    public func kdestroy(princ: String = "" ) {
         
         var name = ""
         
@@ -189,7 +189,7 @@ class KlistUtil {
     
     // function to switch the default cache
     
-    func kswitch(princ: String = "" ) {
+    public func kswitch(princ: String = "" ) {
         
         var name = ""
         var p : krb5_principal? = nil

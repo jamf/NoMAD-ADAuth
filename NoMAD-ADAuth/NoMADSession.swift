@@ -106,6 +106,7 @@ public class NoMADSession : NSObject {
     public var userPass: String = ""                // for auth
     public var oldPass: String = ""                 // for password changes
     public var newPass: String = ""                 // for password changes
+    public var customAttributes : [String]?
     
     // conv. init with domain and user
     
@@ -616,8 +617,12 @@ public class NoMADSession : NSObject {
         
         if ldaptype == .AD {
             
-            let attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            var attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
             // "maxPwdAge" // passwordExpirationLength
+            
+            if customAttributes?.count ?? 0 > 0 {
+                attributes.append(contentsOf: customAttributes!)
+            }
             
             let searchTerm = "sAMAccountName=" + userPrincipalShort
             
@@ -635,6 +640,16 @@ public class NoMADSession : NSObject {
                 let UPN = ldapResult["userPrincipalName"] ?? ""
                 let dn = ldapResult["dn"] ?? ""
                 let cn = ldapResult["cn"] ?? ""
+                
+                var customAttributeResults : [String:Any]?
+                
+                if customAttributes?.count ?? 0 > 0 {
+                    var tempCustomAttr = [String:Any]()
+                    for key in customAttributes! {
+                        tempCustomAttr[key] = ldapResult[key] ?? ""
+                    }
+                    customAttributeResults = tempCustomAttr
+                }
                 
                 if ldapResult.count == 0 {
                     // we didn't get a result
@@ -656,7 +671,7 @@ public class NoMADSession : NSObject {
                 
                 // pack up user record
                 
-                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn)
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, customAttributes: customAttributeResults)
                 
             } else {
                 myLogger.logit(.base, message: "Unable to find user.")
