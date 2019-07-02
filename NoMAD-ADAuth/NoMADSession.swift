@@ -739,7 +739,7 @@ public class NoMADSession : NSObject {
                 // Get the attribute name (before ;),
                 // then add to attributes array if it doesn't exist.
                 var attributeName = attribute[0].trim()
-                if let index = attributeName.index(of: ";") {
+                if let index = attributeName.firstIndex(of: ";") {
                     attributeName = String(attributeName[..<index])
                 }
                 if !attributes.contains(attributeName) {
@@ -936,7 +936,7 @@ public class NoMADSession : NSObject {
                 // build a dictionary and add the KDC into it then write it back to defaults
                 let realm = NSMutableDictionary()
                 //realm.setValue(myLDAPServers.currentServer, forKey: "kdc")
-                realm.setValue(currentServer, forKey: "kpasswd")
+                realm.setValue(currentServer, forKey: "kpasswd_server")
                 kerbRealms[kerberosRealm] = realm
                 kerbPrefs?.set(kerbRealms, forKey: "realms")
                 return true
