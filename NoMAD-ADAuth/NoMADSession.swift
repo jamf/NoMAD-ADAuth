@@ -617,8 +617,7 @@ public class NoMADSession : NSObject {
         
         if ldaptype == .AD {
             
-            var attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
-            // "maxPwdAge" // passwordExpirationLength
+        var attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn", "msDS-ResultantPSO", "msDS-PrincipalName"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
             
             if customAttributes?.count ?? 0 > 0 {
                 attributes.append(contentsOf: customAttributes!)
@@ -640,6 +639,8 @@ public class NoMADSession : NSObject {
                 let UPN = ldapResult["userPrincipalName"] ?? ""
                 let dn = ldapResult["dn"] ?? ""
                 let cn = ldapResult["cn"] ?? ""
+                let pso = ldapResult["msDS-ResultantPSO"] ?? ""
+                let ntName = ldapResult["msDS-PrincipalName"] ?? ""
                 
                 var customAttributeResults : [String:Any]?
                 
@@ -670,8 +671,8 @@ public class NoMADSession : NSObject {
                 userHome = userHome.replacingOccurrences(of: " ", with: "%20")
                 
                 // pack up user record
-                
-                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, customAttributes: customAttributeResults)
+
+                userRecord = ADUserRecord(userPrincipal: userPrincipal,firstName: firstName, lastName: lastName, fullName: userDisplayName, shortName: userPrincipalShort, upn: UPN, email: userEmail, groups: groups, homeDirectory: userHome, passwordSet: tempPasswordSetDate, passwordExpire: userPasswordExpireDate, uacFlags: Int(userPasswordUACFlag), passwordAging: passwordAging, computedExireDate: userPasswordExpireDate, updatedLast: Date(), domain: domain, cn: cn, pso: pso, passwordLength: getComplexity(pso: pso), ntName: ntName, customAttributes: customAttributeResults)
                 
             } else {
                 myLogger.logit(.base, message: "Unable to find user.")
@@ -732,7 +733,7 @@ public class NoMADSession : NSObject {
                 continue
             }
 
-            var attribute = ldifLines[lineIndex].split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+            let attribute = ldifLines[lineIndex].split(separator: ":", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
             if attribute.count == 2 {
                 
                 // Get the attribute name (before ;),
@@ -912,7 +913,7 @@ public class NoMADSession : NSObject {
             let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
 
             // get the list defaults, or create an empty dictionary if there are none
-            var kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
+            let kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
             
             // test to see if the domain_defaults key already exists, if not build it
             if kerbDefaults["default_realm"] != nil {
@@ -989,7 +990,7 @@ public class NoMADSession : NSObject {
 
         // get the list defaults, or create an empty dictionary if there are none
         
-        var kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
+        let kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
         
         // test to see if the domain_defaults key already exists, if not build it
         
@@ -1000,6 +1001,55 @@ public class NoMADSession : NSObject {
             let libDefaults = NSMutableDictionary()
             libDefaults.setValue(realm, forKey: "default_realm")
             kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+        }
+    }
+    
+    // calculate password complexity
+    
+    fileprivate func getComplexity(pso: String="") -> Int? {
+        
+        if pso == "" {
+            // no PSO for the user, get domain default
+            
+            let result = try? getLDAPInformation([ "minPwdLength"], baseSearch: true, searchTerm: "", test: true, overrideDefaultNamingContext: false)
+            
+            if result == nil {
+                return nil
+            }
+            
+            let resultClean = getAttributesForSingleRecordFromCleanedLDIF([ "minPwdLength"], ldif: result!)
+            
+            let final = resultClean[ "minPwdLength"] ?? ""
+            
+            if final == "" {
+                return nil
+            } else {
+                return Int(final)
+            }
+        } else {
+            // go get the pso
+            
+            let tempDefault = defaultNamingContext
+            
+            defaultNamingContext = pso
+            
+            let result = try? getLDAPInformation(["msDS-MinimumPasswordLength"], baseSearch: false, searchTerm: "(objectClass=msDS-PasswordSettings)")
+            // set the default naming context back
+            
+            defaultNamingContext = tempDefault
+            
+            if result == nil {
+                return nil
+            }
+            
+            let resultClean = getAttributesForSingleRecordFromCleanedLDIF([ "msDS-MinimumPasswordLength"], ldif: result!)
+            let final = resultClean["msDS-MinimumPasswordLength"] ?? ""
+            
+            if final == "" {
+                return nil
+            } else {
+                return Int(final)
+            }
         }
     }
 }
