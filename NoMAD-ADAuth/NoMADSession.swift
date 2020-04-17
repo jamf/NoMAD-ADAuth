@@ -1052,55 +1052,6 @@ public class NoMADSession : NSObject {
             kerbPrefs?.set(libDefaults, forKey: "libdefaults")
         }
     }
-    
-    // calculate password complexity
-    
-    fileprivate func getComplexity(pso: String="") -> Int? {
-        
-        if pso == "" {
-            // no PSO for the user, get domain default
-            
-            let result = try? getLDAPInformation([ "minPwdLength"], baseSearch: true, searchTerm: "", test: true, overrideDefaultNamingContext: false)
-            
-            if result == nil {
-                return nil
-            }
-            
-            let resultClean = getAttributesForSingleRecordFromCleanedLDIF([ "minPwdLength"], ldif: result!)
-            
-            let final = resultClean[ "minPwdLength"] ?? ""
-            
-            if final == "" {
-                return nil
-            } else {
-                return Int(final)
-            }
-        } else {
-            // go get the pso
-            
-            let tempDefault = defaultNamingContext
-            
-            defaultNamingContext = pso
-            
-            let result = try? getLDAPInformation(["msDS-MinimumPasswordLength"], baseSearch: false, searchTerm: "(objectClass=msDS-PasswordSettings)")
-            // set the default naming context back
-            
-            defaultNamingContext = tempDefault
-            
-            if result == nil {
-                return nil
-            }
-            
-            let resultClean = getAttributesForSingleRecordFromCleanedLDIF([ "msDS-MinimumPasswordLength"], ldif: result!)
-            let final = resultClean["msDS-MinimumPasswordLength"] ?? ""
-            
-            if final == "" {
-                return nil
-            } else {
-                return Int(final)
-            }
-        }
-    }
 }
 
 extension NoMADSession: NoMADUserSession {
