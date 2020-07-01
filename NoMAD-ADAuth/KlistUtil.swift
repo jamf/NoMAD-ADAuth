@@ -38,7 +38,7 @@ public class KlistUtil {
     public var defaultPrincipal: String?
     public var defaultExpires: Date?
     
-    init() {
+    public init() {
         dateFormatter.dateFormat = "yyyyMMddHHmmss"
     }
     
