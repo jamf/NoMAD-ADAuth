@@ -1215,28 +1215,20 @@ extension NoMADSession {
     // MARK: - testHosts with completion functionality
 
     public func testHosts(completion: @escaping (Bool) -> Void) {
-        myLogger.logit(.base, message: "\n starting testHosts \n")
 
-        let callId = arc4random()
         let dispatchGroup = DispatchGroup()
 
         if state == .success {
-            myLogger.logit(.base, message: "\n state success, going into loop. count: \(hosts.count) \n")
-
             for i in 0...( hosts.count - 1) {
                 dispatchGroup.enter()
-                myLogger.logit(.base, message: "\n testing \(i) \n")
                 if hosts[i].status != "dead" {
-                    myLogger.logit(.base, message: "\n \(i) punks not dead  \n")
                     myLogger.logit(.info, message:"Trying host: " + hosts[i].host)
 
                     // socket test first - this could be falsely negative
                     // also note that this needs to return stderr
 
-                    myLogger.logit(.base, message: "\n Punk thats not dead will perform cli task. Date: \(Date()) \n")
                     let cliTaskString = "/usr/bin/nc -G 5 -z " + hosts[i].host + " " + String(port)
                     cliTask(cliTaskString) { result in
-                        myLogger.logit(.base, message: "\n Punk thats not dead finished cli task. Date: \(Date()) \n")
                         self.handleSocketResult(result: result, index: i) {
                             dispatchGroup.leave()
                         }
@@ -1244,18 +1236,18 @@ extension NoMADSession {
                 }
             }
         } else {
-            myLogger.logit(.base, message: "\n status not success but \(state) \n")
+            myLogger.logit(.base, message: "status not success but \(state) \n")
             completion(false)
         }
         dispatchGroup.notify(queue: DispatchQueue.global()) {
-            myLogger.logit(.base, message: "Notifying that testHost groups dispatchGroup has finished their tasks. CallID: \(callId)")
+            myLogger.logit(.base, message: "Notifying that testHost groups dispatchGroup has finished their tasks")
             completion(self.assertDomainStatus(assertionHosts: self.hosts))
         }
     }
 
     private func assertDomainStatus(assertionHosts: [NoMADLDAPServer]) -> Bool {
         guard (assertionHosts.count > 0) else {
-            myLogger.logit(.base, message: "\n no hosts \n")
+            myLogger.logit(.base, message: "no hosts")
             return false
         }
 
@@ -1264,7 +1256,7 @@ extension NoMADSession {
             state = .offDomain
             return false
         } else {
-            myLogger.logit(.base, message: "\n on domain! \n")
+            myLogger.logit(.base, message: "on domain!")
             state = .success
             return true
         }
@@ -1285,18 +1277,14 @@ extension NoMADSession {
             //swapPrincipals(false)
 
             if anonymous {
-                myLogger.logit(.base, message: "\n Anonymus will perform cli task. Date: \(Date()) \n")
                 let anonymusCliTaskCommand = "/usr/bin/ldapsearch -N -LLL -x " + maxSSF + "-l 3 -s base -H " + URIPrefix + hosts[index].host + " " + String(port) + " " + attribute
                 cliTask(anonymusCliTaskCommand) { result in
-                    myLogger.logit(.base, message: "\n Anonymus cli task finishied. Date: \(Date()) \n")
                     self.handleSocketResultInternalCliTasks(result: result, index: index, attribute: attribute)
                     completion()
                 }
             } else {
-                myLogger.logit(.base, message: "\n Not Anonymus will perform cli task. Date: \(Date()) \n")
                 let nonanonymusCliTaskCommand = "/usr/bin/ldapsearch -N -LLL -Q " + maxSSF + "-l 3 -s base -H " + URIPrefix + hosts[index].host + " " + String(port) + " " + attribute
                 cliTask(nonanonymusCliTaskCommand) { result in
-                    myLogger.logit(.base, message: "\n Not Anonymus cli task finishied. Date: \(Date()) \n")
                     self.handleSocketResultInternalCliTasks(result: result, index: index, attribute: attribute)
                     completion()
                 }
