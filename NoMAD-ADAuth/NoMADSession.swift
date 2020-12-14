@@ -1210,3 +1210,125 @@ extension NoMADSession: NoMADUserSession {
         }
     }
 }
+
+extension NoMADSession {
+    // MARK: - testHosts with completion functionality
+
+    public func testHosts(completion: @escaping (Bool) -> Void) {
+        myLogger.logit(.base, message: "\n starting testHosts \n")
+
+        let callId = arc4random()
+        let dispatchGroup = DispatchGroup()
+
+        if state == .success {
+            myLogger.logit(.base, message: "\n state success, going into loop. count: \(hosts.count) \n")
+
+            for i in 0...( hosts.count - 1) {
+                dispatchGroup.enter()
+                myLogger.logit(.base, message: "\n testing \(i) \n")
+                if hosts[i].status != "dead" {
+                    myLogger.logit(.base, message: "\n \(i) punks not dead  \n")
+                    myLogger.logit(.info, message:"Trying host: " + hosts[i].host)
+
+                    // socket test first - this could be falsely negative
+                    // also note that this needs to return stderr
+
+                    myLogger.logit(.base, message: "\n Punk thats not dead will perform cli task. Date: \(Date()) \n")
+                    let cliTaskString = "/usr/bin/nc -G 5 -z " + hosts[i].host + " " + String(port)
+                    cliTask(cliTaskString) { result in
+                        myLogger.logit(.base, message: "\n Punk thats not dead finished cli task. Date: \(Date()) \n")
+                        self.handleSocketResult(result: result, index: i) {
+                            dispatchGroup.leave()
+                        }
+                    }
+                }
+            }
+        } else {
+            myLogger.logit(.base, message: "\n status not success but \(state) \n")
+            completion(false)
+        }
+        dispatchGroup.notify(queue: DispatchQueue.global()) {
+            myLogger.logit(.base, message: "Notifying that testHost groups dispatchGroup has finished their tasks. CallID: \(callId)")
+            completion(self.assertDomainStatus(assertionHosts: self.hosts))
+        }
+    }
+
+    private func assertDomainStatus(assertionHosts: [NoMADLDAPServer]) -> Bool {
+        guard (assertionHosts.count > 0) else {
+            myLogger.logit(.base, message: "\n no hosts \n")
+            return false
+        }
+
+        if assertionHosts.last!.status == "dead" {
+            myLogger.logit(.base, message: "All DCs in are dead! You should really fix this.")
+            state = .offDomain
+            return false
+        } else {
+            myLogger.logit(.base, message: "\n on domain! \n")
+            state = .success
+            return true
+        }
+    }
+
+    private func handleSocketResult(result: String, index: Int, completion: @escaping () -> Void) {
+        if result.contains("succeeded!") {
+
+            var attribute = "defaultNamingContext"
+
+            // if socket test works, then attempt ldapsearch to get default naming context
+
+            if ldaptype == .OD {
+                attribute = "namingContexts"
+            }
+
+            // TODO: THINK ABOUT THIS
+            //swapPrincipals(false)
+
+            if anonymous {
+                myLogger.logit(.base, message: "\n Anonymus will perform cli task. Date: \(Date()) \n")
+                let anonymusCliTaskCommand = "/usr/bin/ldapsearch -N -LLL -x " + maxSSF + "-l 3 -s base -H " + URIPrefix + hosts[index].host + " " + String(port) + " " + attribute
+                cliTask(anonymusCliTaskCommand) { result in
+                    myLogger.logit(.base, message: "\n Anonymus cli task finishied. Date: \(Date()) \n")
+                    self.handleSocketResultInternalCliTasks(result: result, index: index, attribute: attribute)
+                    completion()
+                }
+            } else {
+                myLogger.logit(.base, message: "\n Not Anonymus will perform cli task. Date: \(Date()) \n")
+                let nonanonymusCliTaskCommand = "/usr/bin/ldapsearch -N -LLL -Q " + maxSSF + "-l 3 -s base -H " + URIPrefix + hosts[index].host + " " + String(port) + " " + attribute
+                cliTask(nonanonymusCliTaskCommand) { result in
+                    myLogger.logit(.base, message: "\n Not Anonymus cli task finishied. Date: \(Date()) \n")
+                    self.handleSocketResultInternalCliTasks(result: result, index: index, attribute: attribute)
+                    completion()
+                }
+            }
+            return
+        } else {
+            myLogger.logit(.info, message:"Server is dead by way of socket test: " + hosts[index].host)
+            hosts[index].status = "dead"
+            hosts[index].timeStamp = Date()
+            completion()
+        }
+    }
+
+    private func handleSocketResultInternalCliTasks(result: String, index: Int, attribute: String) {
+        // TODO: THINK ABOUT THIS
+        //swapPrincipals(false)
+
+        if result != "" && !result.contains("GSSAPI Error") && !result.contains("Can't contact") {
+            let ldifResult = cleanLDIF(result)
+            if ( ldifResult.count > 0 ) {
+                defaultNamingContext = getAttributeForSingleRecordFromCleanedLDIF(attribute, ldif: ldifResult)
+                hosts[index].status = "live"
+                hosts[index].timeStamp = Date()
+                myLogger.logit(.base, message:"Current LDAP Server is: " + hosts[index].host )
+                myLogger.logit(.base, message:"Current default naming context: " + defaultNamingContext )
+                current = index
+                return
+            }
+        }
+        // We didn't get an actual LDIF Result... so LDAP isn't working.
+        myLogger.logit(.info, message:"Server is dead by way of ldap test: " + hosts[index].host)
+        hosts[index].status = "dead"
+        hosts[index].timeStamp = Date()
+    }
+}
