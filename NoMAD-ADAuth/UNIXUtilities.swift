@@ -82,6 +82,72 @@ public func cliTask(_ command: String, arguments: [String]? = nil, waitForTermin
     return output + outputError
 }
 
+public func cliTask(_ command: String,
+                    arguments: [String]? = nil,
+                    completion: @escaping ((String) -> Void)) {
+
+    var commandLaunchPath: String
+    var commandPieces: [String]
+
+    if arguments == nil {
+        // turn the command into an array and get the first element as the launch path
+        commandPieces = command.components(separatedBy: " ")
+        // loop through the components and see if any end in \
+        if command.contains("\\") {
+
+            // we need to rebuild the string with the right components
+            var x = 0
+            for line in commandPieces {
+                if line.last == "\\" {
+                    commandPieces[x] = commandPieces[x].replacingOccurrences(of: "\\", with: " ") + commandPieces.remove(at: x+1)
+                    x -= 1
+                }
+                x += 1
+            }
+        }
+        commandLaunchPath = commandPieces.remove(at: 0)
+    } else {
+        commandLaunchPath = command
+        commandPieces = arguments!
+        //myLogger.logit(.debug, message: commandLaunchPath + " " + arguments!.joinWithSeparator(" "))
+    }
+
+    // make sure the launch path is the full path -- think we're going down a rabbit hole here
+
+    if !commandLaunchPath.contains("/") {
+        let realPath = which(commandLaunchPath)
+        commandLaunchPath = realPath
+    }
+
+    // set up the NSTask instance and an NSPipe for the result
+
+    let myTask = Process()
+
+    let myPipe = Pipe()
+    let myInputPipe = Pipe()
+    let myErrorPipe = Pipe()
+
+    // Setup and Launch!
+
+    myTask.launchPath = commandLaunchPath
+    myTask.arguments = commandPieces
+    myTask.standardOutput = myPipe
+    myTask.standardInput = myInputPipe
+    myTask.standardError = myErrorPipe
+
+    myTask.terminationHandler = { process in
+        let data = myPipe.fileHandleForReading.readDataToEndOfFile()
+        let error = myErrorPipe.fileHandleForReading.readDataToEndOfFile()
+        let outputError = NSString(data: error, encoding: String.Encoding.utf8.rawValue)! as String
+        let output = NSString(data: data, encoding: String.Encoding.utf8.rawValue)! as String
+        myLogger.logit(.info, message:"CliTask completed, calling completion. Time: \(Date())")
+        completion(output + outputError)
+    }
+
+    myTask.launch()
+    myLogger.logit(.info, message:"Launching CliTask. Time: \(Date())")
+}
+
 /// A simple wrapper around NSTask that also doesn't wait for the `Task` termination signal.
 ///
 /// - Parameter command: The `String` of the command to run. A full path to the binary is not required.
