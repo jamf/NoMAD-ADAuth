@@ -10,20 +10,15 @@ import Foundation
 import NoMADPRIVATE
 
 public protocol NoMADUserSession {
-    func getTickets(principal: String?)
+    func getKerberosTicket(principal: String?, completion: @escaping (KerberosTicketResult) -> Void)
     func authenticate(authTestOnly: Bool)
     func changePassword()
     func userInfo()
-    var kerberosDelegate: NoMADKerberosDelegate? { get set }
     var delegate: NoMADUserSessionDelegate? { get set }
     var state: NoMADSessionState { get }
 }
 
-public typealias KerberosTicketsResult = Result<ADUserRecord, NoMADSessionError>
-
-public protocol NoMADKerberosDelegate: AnyObject {
-    func didReceiveKerberosTicketsResult(_ result: KerberosTicketsResult)
-}
+public typealias KerberosTicketResult = Result<ADUserRecord, NoMADSessionError>
 
 public protocol NoMADUserSessionDelegate: AnyObject {
     func NoMADAuthenticationSucceded()
@@ -75,7 +70,6 @@ public class NoMADSession : NSObject {
     // variables
     
     public var state: NoMADSessionState = .offDomain          // current state of affairs
-    weak public var kerberosDelegate: NoMADKerberosDelegate?  // delegate used to share Kerberos tickets result
     weak public var delegate: NoMADUserSessionDelegate?       // delegate
     public var site: String = ""                              // current AD site
     public var defaultNamingContext: String = ""              // current default naming context
@@ -1064,16 +1058,15 @@ public class NoMADSession : NSObject {
 }
 
 extension NoMADSession: NoMADUserSession {
-    public func getTickets(principal: String? = nil) {
+    public func getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void) {
         if let principal = principal, klistUtil.hasTickets(principal: principal) {
-            shareKerberosResult()
+            shareKerberosResult(completion: completion)
             return
         }
 
         let kerbUtil = KerbUtil()
         kerbUtil.getKerbCredentials(userPass, userPrincipal) { [unowned self] error in
             userPass = ""
-
             if let error = error {
                 state = .kerbError
                 let sessionError: NoMADSessionError
@@ -1082,19 +1075,19 @@ extension NoMADSession: NoMADUserSession {
                     sessionError = .PasswordExpired
                 case NoMADSessionError.wrongRealm.rawValue:
                     sessionError = .wrongRealm
-                case _ where error.range(of: "unable to reach any KDC in realm") != nil :
+                case _ where error.contains("unable to reach any KDC in realm"):
                     sessionError = .OffDomain
                 default:
                     sessionError = .KerbError
                 }
-                kerberosDelegate?.didReceiveKerberosTicketsResult(.failure(sessionError))
+                completion(.failure(sessionError))
             } else {
-                processKerberosResult()
+                processKerberosResult(completion: completion)
             }
         }
     }
 
-    private func processKerberosResult() {
+    private func processKerberosResult(completion: @escaping (KerberosTicketResult) -> Void) {
         state = .offDomain
 
         // get ticket
@@ -1102,7 +1095,7 @@ extension NoMADSession: NoMADUserSession {
 
         // check for valid ticket
         guard klistUtil.returnDefaultPrincipal().contains(kerberosRealm) else {
-            kerberosDelegate?.didReceiveKerberosTicketsResult(.failure(.UnAuthenticated))
+            completion(.failure(.UnAuthenticated))
             return
         }
 
@@ -1119,7 +1112,7 @@ extension NoMADSession: NoMADUserSession {
         } else {
             getHosts(domain)
             guard !hosts.isEmpty else {
-                kerberosDelegate?.didReceiveKerberosTicketsResult(.failure(.OffDomain))
+                completion(.failure(.OffDomain))
                 return
             }
             // write found server back to site manager
@@ -1129,24 +1122,24 @@ extension NoMADSession: NoMADUserSession {
             if ldaptype == .AD {
                 findSite()
                 guard state == .success else {
-                    kerberosDelegate?.didReceiveKerberosTicketsResult(.failure(.SiteError))
+                    completion(.failure(.SiteError))
                     return
                 }
             }
         }
         testHosts()
-        shareKerberosResult()
+        shareKerberosResult(completion: completion)
     }
 
-    private func shareKerberosResult() {
+    private func shareKerberosResult(completion: (KerberosTicketResult) -> Void) {
         getUserInformation()
-        let result: KerberosTicketsResult
+        let result: KerberosTicketResult
         if let userRecord = userRecord {
             result = .success(userRecord)
         } else {
             result = .failure(.KerbError)
         }
-        kerberosDelegate?.didReceiveKerberosTicketsResult(result)
+        completion(result)
     }
 
     /// Function to authenticate a user via Kerberos. If only looking to test the password, and not get a ticket, pass (authTestOnly: true).
