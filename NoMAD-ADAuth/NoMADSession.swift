@@ -10,7 +10,7 @@ import Foundation
 import NoMADPRIVATE
 
 public protocol NoMADUserSession {
-    func getKerberosTickets(principal: String?)
+    func getTickets(principal: String?)
     func authenticate(authTestOnly: Bool)
     func changePassword()
     func userInfo()
@@ -1064,7 +1064,7 @@ public class NoMADSession : NSObject {
 }
 
 extension NoMADSession: NoMADUserSession {
-    public func getKerberosTickets(principal: String? = nil) {
+    public func getTickets(principal: String? = nil) {
         if let principal = principal, klistUtil.hasTickets(principal: principal) {
             shareKerberosResult()
             return
