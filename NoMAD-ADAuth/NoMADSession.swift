@@ -1071,32 +1071,26 @@ extension NoMADSession: NoMADUserSession {
         }
 
         let kerbUtil = KerbUtil()
-        let error = kerbUtil.getKerbCredentials(userPass, userPrincipal)
+        kerbUtil.getKerbCredentials(userPass, userPrincipal) { [unowned self] error in
+            userPass = ""
 
-        //TODO: Make this not a war crime - Josh
-        // wait for auth to finish
-        while !kerbUtil.finished {
-            RunLoop.current.run(mode: RunLoop.Mode.default, before: Date.distantFuture)
-        }
-
-        userPass = ""
-
-        if let error = error {
-            state = .kerbError
-            let sessionError: NoMADSessionError
-            switch error {
-            case NoMADSessionError.PasswordExpired.rawValue:
-                sessionError = .PasswordExpired
-            case NoMADSessionError.wrongRealm.rawValue:
-                sessionError = .wrongRealm
-            case _ where error.range(of: "unable to reach any KDC in realm") != nil :
-                sessionError = .OffDomain
-            default:
-                sessionError = .KerbError
+            if let error = error {
+                state = .kerbError
+                let sessionError: NoMADSessionError
+                switch error {
+                case NoMADSessionError.PasswordExpired.rawValue:
+                    sessionError = .PasswordExpired
+                case NoMADSessionError.wrongRealm.rawValue:
+                    sessionError = .wrongRealm
+                case _ where error.range(of: "unable to reach any KDC in realm") != nil :
+                    sessionError = .OffDomain
+                default:
+                    sessionError = .KerbError
+                }
+                kerberosDelegate?.didReceiveKerberosTicketsResult(.failure(sessionError))
+            } else {
+                processKerberosResult()
             }
-            kerberosDelegate?.didReceiveKerberosTicketsResult(.failure(sessionError))
-        } else {
-            processKerberosResult()
         }
     }
 

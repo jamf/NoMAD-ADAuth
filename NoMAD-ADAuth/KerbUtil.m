@@ -30,6 +30,35 @@ extern OSStatus SecKeychainChangePassword(SecKeychainRef keychainRef, UInt32 old
 
 extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* password, Boolean resetSearchList);
 
+- (void)getKerbCredentials:(NSString *)password :(NSString *)userPrincipal completion:(void(^)(NSString *))callback {
+    OM_uint32 maj_stat;
+    gss_name_t gname = GSS_C_NO_NAME;
+    gss_cred_id_t cred = NULL;
+    CFErrorRef error = NULL;
+
+    // preflight for spaces in the userPrincipal
+    gname = GSSCreateName((__bridge CFTypeRef _Nonnull)(userPrincipal), GSS_C_NT_USER_NAME, NULL);
+    if (gname == NULL) {
+        callback(@"error: creating GSS name");
+        return;
+    }
+
+    NSDictionary *attrs = @{ (id)kGSSICPassword : password };
+    maj_stat = gss_aapl_initial_cred(gname, GSS_KRB5_MECHANISM, (__bridge CFDictionaryRef)attrs, &cred, &error);
+
+    CFRelease(gname);
+    if (maj_stat) {
+        NSLog(@"error: %d %@", (int)maj_stat, error);
+        NSDictionary *errorDict = CFBridgingRelease(CFErrorCopyUserInfo(error)) ;
+        NSString *errorMessage = [errorDict valueForKey:(@"NSDescription")];
+        callback(errorMessage);
+        return;
+    }
+
+    CFRelease(cred);
+    callback(nil);
+}
+
 - (NSString *)getKerbCredentials:(NSString *)password :(NSString *)userPrincipal {
 
     self.finished = NO;
