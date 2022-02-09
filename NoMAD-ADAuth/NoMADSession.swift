@@ -10,7 +10,7 @@ import Foundation
 import NoMADPRIVATE
 
 public protocol NoMADUserSession {
-    func getKerberosTickets()
+    func getKerberosTickets(principal: String?)
     func authenticate(authTestOnly: Bool)
     func changePassword()
     func userInfo()
@@ -1064,10 +1064,12 @@ public class NoMADSession : NSObject {
 }
 
 extension NoMADSession: NoMADUserSession {
+    public func getKerberosTickets(principal: String? = nil) {
+        if let principal = principal, klistUtil.hasTickets(principal: principal) {
+            shareKerberosResult()
+            return
+        }
 
-    /// Function to authenticate a user via Kerberos
-    /// Note this will kill any pre-existing tickets for this user as well.
-    public func getKerberosTickets() {
         let kerbUtil = KerbUtil()
         let error = kerbUtil.getKerbCredentials(userPass, userPrincipal)
 
@@ -1101,8 +1103,10 @@ extension NoMADSession: NoMADUserSession {
     private func processKerberosResult() {
         state = .offDomain
 
-        // check for valid ticket
+        // get ticket
         klistUtil.klist()
+
+        // check for valid ticket
         guard klistUtil.returnDefaultPrincipal().contains(kerberosRealm) else {
             kerberosDelegate?.didReceiveKerberosTicketsResult(.failure(.UnAuthenticated))
             return
@@ -1137,7 +1141,10 @@ extension NoMADSession: NoMADUserSession {
             }
         }
         testHosts()
+        shareKerberosResult()
+    }
 
+    private func shareKerberosResult() {
         getUserInformation()
         let result: KerberosTicketsResult
         if let userRecord = userRecord {
