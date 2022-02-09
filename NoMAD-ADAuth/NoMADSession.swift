@@ -1065,24 +1065,24 @@ extension NoMADSession: NoMADUserSession {
         }
 
         let kerbUtil = KerbUtil()
-        kerbUtil.getKerbCredentials(userPass, userPrincipal) { [unowned self] error in
-            userPass = ""
-            if let error = error {
-                state = .kerbError
+        kerbUtil.getKerbCredentials(userPass, userPrincipal) { [unowned self] errorValue in
+            self.userPass = ""
+            if let errorValue = errorValue {
+                self.state = .kerbError
                 let sessionError: NoMADSessionError
-                switch error {
+                switch errorValue {
                 case NoMADSessionError.PasswordExpired.rawValue:
                     sessionError = .PasswordExpired
                 case NoMADSessionError.wrongRealm.rawValue:
                     sessionError = .wrongRealm
-                case _ where error.contains("unable to reach any KDC in realm"):
+                case _ where errorValue.contains("unable to reach any KDC in realm"):
                     sessionError = .OffDomain
                 default:
                     sessionError = .KerbError
                 }
                 completion(.failure(sessionError))
             } else {
-                processKerberosResult(completion: completion)
+                self.processKerberosResult(completion: completion)
             }
         }
     }
