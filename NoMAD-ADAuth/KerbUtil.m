@@ -49,7 +49,7 @@ extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* passwor
     CFRelease(gname);
     if (maj_stat) {
         NSLog(@"error: %d %@", (int)maj_stat, error);
-        NSDictionary *errorDict = CFBridgingRelease(CFErrorCopyUserInfo(error)) ;
+        NSDictionary *errorDict = CFBridgingRelease(CFErrorCopyUserInfo(error));
         NSString *errorMessage = [errorDict valueForKey:(@"NSDescription")];
         callback(errorMessage);
         return;

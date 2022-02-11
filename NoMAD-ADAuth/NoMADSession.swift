@@ -66,9 +66,7 @@ public struct NoMADLDAPServer {
 
 /// A general purpose class that is the main entrypoint for interactions with Active Directory.
 public class NoMADSession : NSObject {
-    
-    // variables
-    
+
     public var state: NoMADSessionState = .offDomain          // current state of affairs
     weak public var delegate: NoMADUserSessionDelegate?       // delegate
     public var site: String = ""                              // current AD site
@@ -1059,6 +1057,7 @@ public class NoMADSession : NSObject {
 
 extension NoMADSession: NoMADUserSession {
     public func getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void) {
+        // Check if system already has tickets
         if let principal = principal, klistUtil.hasTickets(principal: principal) {
             shareKerberosResult(completion: completion)
             return
@@ -1090,10 +1089,10 @@ extension NoMADSession: NoMADUserSession {
     private func processKerberosResult(completion: @escaping (KerberosTicketResult) -> Void) {
         state = .offDomain
 
-        // get ticket
+        // Get ticket
         klistUtil.klist()
 
-        // check for valid ticket
+        // Check for valid ticket
         guard klistUtil.returnDefaultPrincipal().contains(kerberosRealm) else {
             completion(.failure(.UnAuthenticated))
             return
