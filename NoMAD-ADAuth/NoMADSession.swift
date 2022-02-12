@@ -1056,6 +1056,7 @@ public class NoMADSession : NSObject {
 }
 
 extension NoMADSession: NoMADUserSession {
+
     public func getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void) {
         // Check if system already has tickets
         if let principal = principal, klistUtil.hasTickets(principal: principal) {
@@ -1064,7 +1065,7 @@ extension NoMADSession: NoMADUserSession {
         }
 
         let kerbUtil = KerbUtil()
-        kerbUtil.getKerbCredentials(userPass, userPrincipal) { [unowned self] errorValue in
+        kerbUtil.getKerberosCredentials(userPass, userPrincipal) { [unowned self] errorValue in
             self.userPass = ""
             if let errorValue = errorValue {
                 self.state = .kerbError
@@ -1092,8 +1093,8 @@ extension NoMADSession: NoMADUserSession {
         // Get ticket
         klistUtil.klist()
 
-        // Check for valid ticket
-        guard klistUtil.returnDefaultPrincipal().contains(kerberosRealm) else {
+        // Check that ticket is valid
+        if !klistUtil.returnDefaultPrincipal().contains(kerberosRealm) && !anonymous {
             completion(.failure(.UnAuthenticated))
             return
         }

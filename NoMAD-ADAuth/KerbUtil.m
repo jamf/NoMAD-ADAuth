@@ -30,7 +30,7 @@ extern OSStatus SecKeychainChangePassword(SecKeychainRef keychainRef, UInt32 old
 
 extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* password, Boolean resetSearchList);
 
-- (void)getKerbCredentials:(NSString *)password :(NSString *)userPrincipal completion:(void(^)(NSString *))callback {
+- (void)getKerberosCredentials:(NSString *)password :(NSString *)userPrincipal completion:(void(^)(NSString *))callback {
     OM_uint32 maj_stat;
     gss_name_t gname = GSS_C_NO_NAME;
     gss_cred_id_t cred = NULL;
