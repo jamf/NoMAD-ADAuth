@@ -15,13 +15,25 @@ The NoMAD AD Authentication Framework allows you to present a username and passw
 - is aware of network changes, and will mark sites to be re-discovered on changes
 - perform recursive group lookups
 
-## Basic Usage of the Framework
+## Basic Usage of the Framework via Delegate
 
-- Drag the framework into your project in the Embedded Binaries section of the target.
+- Drag the framework into your project in the Embedded Binaries section of the target
 - Import NoMAD_ADAuth into your class
-- Subclass NoMADUserSessionDelegate, and then add the stubs suggested to conform to the protocol
+- Adopt NoMADUserSessionDelegate, and then add the stubs suggested to conform to the protocol
 - create a NoMADSession object `let session = NoMADSession.init(domain: "nomad.test", user: "ftest@NOMAD.TEST", type: .AD)`
 - set a password on the session object `session.userPass = "Secret1!"`
 - set the session delegate to your class `session.delegate = self`
-- try to authenticate `sesssion.authenticate()`
+- try to authenticate `session.authenticate()`
 - the delegate callbacks will then let you know if the auth succeeded or not
+
+## Basic Usage of the Framework via Closure
+
+- Drag the framework into your project in the Embedded Binaries section of the target
+- Import `NoMAD_ADAuth`
+- Make a `NoMADSession` object via `init(domain: String, user: String, type: LDAPType = .AD)`
+- Set the session's `userPass` variable
+- Call the session's `getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void)` function
+- If the optional `principal` parameter is supplied, this function tries to fetch an existing ticket for this principal,
+-  and then if unsuccessful, continues by trying to get a new ticket
+- This function shares its result by running the supplied closure upon completion
+-  with `KerberosTicketResult` containing either an `ADUserRecord` on success or a `NoMADSessionError` on failure

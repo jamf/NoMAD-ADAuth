@@ -10,6 +10,7 @@ import Foundation
 import NoMADPRIVATE
 
 public protocol NoMADUserSession {
+    func getKerberosTicket(principal: String?, completion: @escaping (KerberosTicketResult) -> Void)
     func authenticate(authTestOnly: Bool)
     func changePassword()
     func userInfo()
@@ -17,7 +18,9 @@ public protocol NoMADUserSession {
     var state: NoMADSessionState { get }
 }
 
-public protocol NoMADUserSessionDelegate: class {
+public typealias KerberosTicketResult = Result<ADUserRecord, NoMADSessionError>
+
+public protocol NoMADUserSessionDelegate: AnyObject {
     func NoMADAuthenticationSucceded()
     func NoMADAuthenticationFailed(error: NoMADSessionError, description: String)
     func NoMADUserInformation(user: ADUserRecord)
@@ -34,16 +37,16 @@ public enum NoMADSessionState {
     case kerbError
 }
 
-public enum NoMADSessionError: Error {
+public enum NoMADSessionError: String, Error {
     case OffDomain
     case UnAuthenticated
     case SiteError
     case StateError
     case AuthenticationFailure
     case KerbError
-    case PasswordExpired
+    case PasswordExpired = "Password has expired"
     case unknownPrincipal
-    case wrongRealm
+    case wrongRealm = "Wrong realm"
 }
 
 public enum LDAPType {
@@ -63,21 +66,19 @@ public struct NoMADLDAPServer {
 
 /// A general purpose class that is the main entrypoint for interactions with Active Directory.
 public class NoMADSession : NSObject {
+
+    public var state: NoMADSessionState = .offDomain          // current state of affairs
+    weak public var delegate: NoMADUserSessionDelegate?       // delegate
+    public var site: String = ""                              // current AD site
+    public var defaultNamingContext: String = ""              // current default naming context
+    private var hosts = [NoMADLDAPServer]()                   // list of LDAP servers
+    private var resolver = DNSResolver()                      // DNS resolver object
+    private var maxSSF = ""                                   // current security level in place for LDAP lookups
+    private var URIPrefix = "ldap://"                         // LDAP or LDAPS
     
-    // varibles
-    
-    public var state: NoMADSessionState = .offDomain            // current state of affairs
-    weak public var delegate: NoMADUserSessionDelegate?     // delegate
-    public var site: String = ""                            // current AD site
-    public var defaultNamingContext: String = ""            // current default naming context
-    private var hosts = [NoMADLDAPServer]()                 // list of LDAP servers
-    private var resolver = DNSResolver()                    // DNS resolver object
-    private var maxSSF = ""                                 // current security level in place for LDAP lookups
-    private var URIPrefix = "ldap://"                       // LDAP or LDAPS
-    
-    private var current = 0                                 // current LDAP server from hosts
-    public var home = ""                                    // current active user home
-    public var ldapServers : [String]?                      // static DCs to use instead of looking up via DNS records
+    private var current = 0                                   // current LDAP server from hosts
+    public var home = ""                                      // current active user home
+    public var ldapServers : [String]?                        // static DCs to use instead of looking up via DNS records
     
     
     // Base configuration prefs
@@ -1055,6 +1056,91 @@ public class NoMADSession : NSObject {
 }
 
 extension NoMADSession: NoMADUserSession {
+
+    public func getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void) {
+        // Check if system already has tickets
+        if let principal = principal, klistUtil.hasTickets(principal: principal) {
+            shareKerberosResult(completion: completion)
+            return
+        }
+
+        let kerbUtil = KerbUtil()
+        kerbUtil.getKerberosCredentials(userPass, userPrincipal) { [unowned self] errorValue in
+            self.userPass = ""
+            if let errorValue = errorValue {
+                self.state = .kerbError
+                let sessionError: NoMADSessionError
+                switch errorValue {
+                case NoMADSessionError.PasswordExpired.rawValue:
+                    sessionError = .PasswordExpired
+                case NoMADSessionError.wrongRealm.rawValue:
+                    sessionError = .wrongRealm
+                case _ where errorValue.contains("unable to reach any KDC in realm"):
+                    sessionError = .OffDomain
+                default:
+                    sessionError = .KerbError
+                }
+                completion(.failure(sessionError))
+            } else {
+                self.processKerberosResult(completion: completion)
+            }
+        }
+    }
+
+    private func processKerberosResult(completion: @escaping (KerberosTicketResult) -> Void) {
+        state = .offDomain
+
+        // Get ticket
+        klistUtil.klist()
+
+        // Check that ticket is valid
+        if !klistUtil.returnDefaultPrincipal().contains(kerberosRealm) && !anonymous {
+            completion(.failure(.UnAuthenticated))
+            return
+        }
+
+        if useSSL {
+            URIPrefix = "ldaps://"
+            port = 636
+            maxSSF = "-O maxssf=0 "
+        }
+
+        if let server = siteManager.sites[domain] {
+            // use existing server
+            hosts = server
+            state = .success
+        } else {
+            getHosts(domain)
+            guard !hosts.isEmpty else {
+                completion(.failure(.OffDomain))
+                return
+            }
+            // write found server back to site manager
+            siteManager.sites[domain] = hosts
+
+            // LDAP Ping to find the correct site
+            if ldaptype == .AD {
+                findSite()
+                guard state == .success else {
+                    completion(.failure(.SiteError))
+                    return
+                }
+            }
+        }
+        testHosts()
+        shareKerberosResult(completion: completion)
+    }
+
+    private func shareKerberosResult(completion: (KerberosTicketResult) -> Void) {
+        getUserInformation()
+        let result: KerberosTicketResult
+        if let userRecord = userRecord {
+            result = .success(userRecord)
+        } else {
+            result = .failure(.KerbError)
+        }
+        completion(result)
+    }
 
     /// Function to authenticate a user via Kerberos. If only looking to test the password, and not get a ticket, pass (authTestOnly: true).
     ///
