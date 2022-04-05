@@ -12,7 +12,7 @@ import NoMADPRIVATE
 public protocol NoMADUserSession {
     func getKerberosTicket(principal: String?, completion: @escaping (KerberosTicketResult) -> Void)
     func authenticate(authTestOnly: Bool)
-    func changePassword(oldPassword: String, newPassword: String, completion: @escaping () -> Void)
+    func changePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void)
     func changePassword()
     func userInfo()
     var delegate: NoMADUserSessionDelegate? { get set }
@@ -891,64 +891,55 @@ public class NoMADSession : NSObject {
         }
         return false
     }
-    
+
     // MARK: Kerberos preference file needs to be updated:
-    // This function builds new Kerb prefs with KDC included if possible
-    
-    private func checkKpasswdServer() -> Bool {
-        if hosts.isEmpty {
+    // This function builds new Kerberos prefs with KDC included if possible
+
+    private func checkKpasswdServer() {
         myLogger.logit(.debug, message: "Make sure we have LDAP servers")
+        if hosts.isEmpty {
             getHosts(domain)
         }
-
-        myLogger.logit(.debug, message: "Searching for kerberos srv records")
-
-        let myKpasswdServers = getSRVRecords(domain, srv_type: "_kpasswd._tcp.")
-        myLogger.logit(.debug, message: "New kpasswd Servers are: " + myKpasswdServers.description)
+        myLogger.logit(.debug, message: "Search for Kerberos SRV records")
+        let kpasswdServers = getSRVRecords(domain, srv_type: "_kpasswd._tcp.")
+        myLogger.logit(.debug, message: "New kpasswd servers are: " + kpasswdServers.description)
         myLogger.logit(.debug, message: "Current Server is: " + currentServer)
+        guard kpasswdServers.contains(currentServer) else {
+            myLogger.logit(LogLevel.base, message: "Couldn't find kpasswd server that matches current LDAP server. Letting system choose.")
+            return
+        }
+        myLogger.logit(.debug, message: "Found kpasswd server that matches current LDAP server")
+    }
 
-        if myKpasswdServers.contains(currentServer) {
-            myLogger.logit(.debug, message: "Found kpasswd server that matches current LDAP server.")
-            myLogger.logit(.debug, message: "Attempting to set kpasswd server to ensure Kerberos and LDAP are in sync.")
-            
-            // get the defaults for com.apple.Kerberos
-            let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
+    // Make a minimal com.apple.Kerberos file
+    private func makeKerbosPrefs() {
+        let kerberosPrefs = UserDefaults(suiteName: "com.apple.Kerberos")
 
-            // get the list defaults, or create an empty dictionary if there are none
-            let kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
-            
-            // test to see if the domain_defaults key already exists, if not build it
-            if kerbDefaults["default_realm"] != nil {
-                myLogger.logit(.debug, message: "Existing default realm. Skipping adding default realm to Kerberos prefs.")
-            } else {
-                // build a dictionary and add the KDC into it then write it back to defaults
-                let libDefaults = NSMutableDictionary()
-                libDefaults.setValue(kerberosRealm, forKey: "default_realm")
-                kerbPrefs?.set(libDefaults, forKey: "libdefaults")
-            }
-            
-            // get the list of domains, or create an empty dictionary if there are none
-            var kerbRealms = kerbPrefs?.dictionary(forKey: "realms")  ?? [String:AnyObject]()
-            
-            // test to see if the realm already exists, if not build it
-            if kerbRealms[kerberosRealm] != nil {
-                myLogger.logit(.debug, message: "Existing Kerberos configuration for realm. Skipping adding KDC to Kerberos prefs.")
-                return false
-            } else {
-                // build a dictionary and add the KDC into it then write it back to defaults
-                let realm = NSMutableDictionary()
-                //realm.setValue(myLDAPServers.currentServer, forKey: "kdc")
-                realm.setValue(currentServer, forKey: "kpasswd_server")
-                kerbRealms[kerberosRealm] = realm
-                kerbPrefs?.set(kerbRealms, forKey: "realms")
-                return true
-            }
+        // Get the libdefaults dictionary or make an empty dictionary
+        var libDefaults = kerberosPrefs?.dictionary(forKey: "libdefaults") ?? [String: String]()
+        // Test if default_realm already exists; if not build it
+        if libDefaults["default_realm"] != nil {
+            myLogger.logit(.debug, message: "Existing default realm. Skipping adding default realm to Kerberos prefs.")
         } else {
-            myLogger.logit(LogLevel.base, message: "Couldn't find kpasswd server that matches current LDAP server. Letting system chose.")
-            return false
+            // Build a dictionary and add the KDC into it then write it back to defaults
+            libDefaults["default_realm"] = kerberosRealm
+            kerberosPrefs?.set(libDefaults, forKey: "libdefaults")
+        }
+
+        // Get the realms dictionary or make an empty dictionary
+        var realms = kerberosPrefs?.dictionary(forKey: "realms") ?? [String: [String: String]]()
+        // Test if the current realm already exists; if not build it
+        if realms[kerberosRealm] != nil {
+            myLogger.logit(.debug, message: "Existing Kerberos configuration for realm. Skipping adding KDC to Kerberos prefs.")
+        } else {
+            // Build a dictionary and add the KDC into it then write it back to defaults
+            var currentRealm = [String: String]()
+            currentRealm["kpasswd_server"] = currentServer
+            realms[kerberosRealm] = currentRealm
+            kerberosPrefs?.set(realms, forKey: "realms")
         }
     }
-    
+
     // calculate password complexity
     
     fileprivate func getComplexity(pso: String="") -> Int? {
@@ -998,52 +989,21 @@ public class NoMADSession : NSObject {
         }
     }
 
-    // Remove a default realm from the Kerb pref file
-    fileprivate func cleanKerbPrefs(clearLibDefaults: Bool = false) {
+    // Clean realms default in Kerberos pref file
+    private func cleanKerbPrefs() {
+        let kerberosPrefs = UserDefaults(suiteName: "com.apple.Kerberos")
 
-        // Get the defaults for com.apple.Kerberos
-        let kerbPrefs = UserDefaults(suiteName: "com.apple.Kerberos")
-
-        // Get the list of domains, or create an empty dictionary if there are none
-        var kerbRealms = kerbPrefs?.dictionary(forKey: "realms") ?? [String: AnyObject]()
-
-        // Test to see if the realm already exists; if it's already gone we are good
-        if kerbRealms[kerberosRealm] == nil {
-            myLogger.logit(.debug, message: "No realm in com.apple.Kerberos defaults.")
+        // Get the realms dictionary
+        var realms = kerberosPrefs?.dictionary(forKey: "realms")
+        // Test to see if realms dictionary contains Kerberos realm; if it's already gone we are good
+        if realms?[kerberosRealm] == nil {
+            myLogger.logit(.debug, message: "Realms dictionary is clean of Kerberos realm in com.apple.Kerberos")
         } else {
-            myLogger.logit(.debug, message: "Removing realm from Kerberos Preferences.")
-            // Remove the realm from the realms list
-            kerbRealms.removeValue(forKey: kerberosRealm)
+            myLogger.logit(.debug, message: "Removing Kerberos realm from realms dictionary in com.apple.Kerberos")
+            // Remove Kerberos realm from the realms dictionary
+            realms?[kerberosRealm] = nil
             // Save the dictionary back to the pref file
-            kerbPrefs?.set(kerbRealms, forKey: "realms")
-
-            if clearLibDefaults {
-                var libDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String: AnyObject]()
-                libDefaults.removeValue(forKey: "default_realm")
-                kerbPrefs?.set(libDefaults, forKey: "libdefaults")
-            }
-        }
-    }
-
-    // Create a minimal com.apple.Kerberos file so we don't barf on password change
-    fileprivate func createBasicKerbPrefs(realm: String?) {
-
-        let realm = realm ?? kerberosRealm
-
-        // Get the defaults for com.apple.Kerberos
-        let kerbPrefs = UserDefaults(suiteName: "com.apple.Kerberos")
-
-        // Get the list defaults, or create an empty dictionary if there are none
-        let kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String: AnyObject]()
-
-        // Test to see if the domain_defaults key already exists; if not build it
-        if kerbDefaults["default_realm"] != nil {
-            myLogger.logit(.debug, message: "Existing default realm. Skipping adding default realm to Kerberos prefs.")
-        } else {
-            // Build a dictionary and add the KDC into it, then write it back to defaults
-            let libDefaults = NSMutableDictionary()
-            libDefaults.setValue(realm, forKey: "default_realm")
-            kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+            kerberosPrefs?.set(realms, forKey: "realms")
         }
     }
 }
@@ -1180,9 +1140,25 @@ extension NoMADSession: NoMADUserSession {
     }
 
     /// Changes the password for the current user session.
-    public func changePassword(oldPassword: String, newPassword: String, completion: @escaping () -> Void) {
-        myLogger.logit(.debug, message: "Change password.")
+    public func changePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
+        // Check kerb prefs - otherwise we can get an error if not set
+        myLogger.logit(.debug, message: "Check kpassword server")
+        checkKpasswdServer()
 
+        myLogger.logit(.debug, message: "Attempt to set kpasswd server to ensure Kerberos and LDAP are in sync")
+        makeKerbosPrefs()
+
+        myLogger.logit(.debug, message: "Change password.")
+        KerbUtil().changeKerberosPassword(oldPassword, newPassword, userPrincipal) {
+            if let errorValue = $0 {
+                completion(errorValue)
+            } else {
+                completion(nil)
+            }
+        }
+
+        // Clean the Kerberos prefs so we don't reuse the KDCs
+        cleanKerbPrefs()
     }
 
     /// Changes the password for the current user session.
@@ -1190,7 +1166,10 @@ extension NoMADSession: NoMADUserSession {
         // change user's password
         // check kerb prefs - otherwise we can get an error here if not set
         myLogger.logit(.debug, message: "Checking kpassword server.")
-        _ = checkKpasswdServer()
+        checkKpasswdServer()
+
+        myLogger.logit(.debug, message: "Attempt to set kpasswd server to ensure Kerberos and LDAP are in sync")
+        makeKerbosPrefs()
 
         // set up the KerbUtil
         myLogger.logit(.debug, message: "Init KerbUtil.")

@@ -23,6 +23,7 @@ extern OSStatus SecKeychainItemSetAccessWithPassword(SecKeychainItemRef item, Se
 
 - (void)getKerberosCredentials:(NSString *)password :(NSString *)userPrincipal completion:(void(^)(NSString *))callback;
 - (NSString *)getKerbCredentials:(NSString *)password :(NSString *)userPrincipal;
+- (void)changeKerberosPassword:(NSString *)oldPassword :(NSString *)newPassword :(NSString *)userPrincipal completion:(void(^)(NSString *))callback;
 - (NSString *)changeKerbPassword:(NSString *)oldPassword :(NSString *)newPassword :(NSString *)userPrincipal;
 - (int)checkPassword:(NSString *)myPassword;
 - (int)changeKeychainPassword:(NSString *)oldPassword :(NSString *)newPassword;

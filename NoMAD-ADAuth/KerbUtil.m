@@ -39,7 +39,7 @@ extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* passwor
     // preflight for spaces in the userPrincipal
     gname = GSSCreateName((__bridge CFTypeRef _Nonnull)(userPrincipal), GSS_C_NT_USER_NAME, NULL);
     if (gname == NULL) {
-        callback(@"error: creating GSS name");
+        callback(@"error: failed to create GSS name");
         return;
     }
 
@@ -92,6 +92,32 @@ extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* passwor
     CFRelease(cred);
     self.finished = YES;
     return nil ;
+}
+
+- (void)changeKerberosPassword:(NSString *)oldPassword :(NSString *)newPassword :(NSString *)userPrincipal completion:(void(^)(NSString *))callback {
+    OM_uint32 maj_stat;
+    gss_name_t gname = GSS_C_NO_NAME;
+    CFErrorRef error = NULL;
+
+    gname = GSSCreateName((__bridge CFTypeRef _Nonnull)(userPrincipal), GSS_C_NT_USER_NAME, NULL);
+    if (gname == NULL) {
+        callback(@"error: failed to create GSS name");
+        return;
+    }
+    NSDictionary *attrs = @{ (id)kGSSChangePasswordOldPassword: oldPassword,
+                             (id)kGSSChangePasswordNewPassword: newPassword };
+
+    maj_stat = gss_aapl_change_password(gname, GSS_KRB5_MECHANISM, (__bridge CFDictionaryRef)attrs, &error);
+
+    CFRelease(gname);
+    if (maj_stat) {
+        NSLog(@"error: %d %@", (int)maj_stat, error);
+        NSDictionary *errorDict = CFBridgingRelease(CFErrorCopyUserInfo(error));
+        NSString *errorMessage = [errorDict valueForKey:(@"NSDescription")];
+        callback(errorMessage);
+        return;
+    }
+    callback(nil);
 }
 
 - (NSString *)changeKerbPassword:(NSString *)oldPassword :(NSString *)newPassword :(NSString *)userPrincipal {
