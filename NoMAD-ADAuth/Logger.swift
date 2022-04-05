@@ -69,12 +69,12 @@ class Logger {
     ///   - level: A value from `LogLevel` enum
     ///   - message: A `String` that describes the information to be logged
     func logit(_ level: LogLevel, message: String) {
-        if (level.rawValue <= loglevel.rawValue) {
+//!        if (level.rawValue <= loglevel.rawValue) {
             if #available(OSX 10.12, *) {
-                os_log("%{public}@", log: log!, type: .debug, message)
+                os_log("%{public}@", log: log!, type: .info, message)  // .debug
             } else {
                 NSLog("level: \(level) - " + message)
             }
-        }
+//!        }
     }
 }
