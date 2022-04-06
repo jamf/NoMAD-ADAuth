@@ -12,7 +12,7 @@ import NoMADPRIVATE
 public protocol NoMADUserSession {
     func getKerberosTicket(principal: String?, completion: @escaping (KerberosTicketResult) -> Void)
     func authenticate(authTestOnly: Bool)
-    func changeKerberosPassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void)
+    func changePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void)
     func changePassword()
     func userInfo()
     var delegate: NoMADUserSessionDelegate? { get set }
@@ -1141,7 +1141,7 @@ extension NoMADSession: NoMADUserSession {
     }
 
     /// Change the password for the current user session via closure.
-    public func changeKerberosPassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
+    public func changePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
         // Check kerb prefs - otherwise we can get an error if not set
         myLogger.logit(.debug, message: "Check kpassword server")
         checkKpasswdServer()
