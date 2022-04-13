@@ -48,6 +48,7 @@ public enum NoMADSessionError: String, Error {
     case PasswordExpired = "Password has expired"
     case unknownPrincipal
     case wrongRealm = "Wrong realm"
+    case timeout = "Process timed out"
 }
 
 public enum LDAPType {
@@ -66,20 +67,22 @@ public struct NoMADLDAPServer {
 // MARK: Start of public class
 
 /// A general purpose class that is the main entrypoint for interactions with Active Directory.
-public class NoMADSession : NSObject {
+public class NoMADSession: NSObject {
 
-    public var state: NoMADSessionState = .offDomain          // current state of affairs
-    weak public var delegate: NoMADUserSessionDelegate?       // delegate
-    public var site: String = ""                              // current AD site
-    public var defaultNamingContext: String = ""              // current default naming context
-    private var hosts = [NoMADLDAPServer]()                   // list of LDAP servers
-    private var resolver = DNSResolver()                      // DNS resolver object
-    private var maxSSF = ""                                   // current security level in place for LDAP lookups
-    private var URIPrefix = "ldap://"                         // LDAP or LDAPS
-    private let kerberosDefaultsSuite = "com.apple.Kerberos"  // Kerberos defaults
-    private var current = 0                                   // current LDAP server from hosts
-    public var home = ""                                      // current active user home
-    public var ldapServers : [String]?                        // static DCs to use instead of looking up via DNS records
+    public var state: NoMADSessionState = .offDomain            // current state of affairs
+    weak public var delegate: NoMADUserSessionDelegate?         // delegate
+    public var site: String = ""                                // current AD site
+    public var defaultNamingContext: String = ""                // current default naming context
+    private var hosts = [NoMADLDAPServer]()                     // list of LDAP servers
+    private var resolver = DNSResolver()                        // DNS resolver object
+    private var maxSSF = ""                                     // current security level in place for LDAP lookups
+    private var URIPrefix = "ldap://"                           // LDAP or LDAPS
+    private let kerberosDefaultsName = "com.apple.Kerberos"     // Kerberos defaults
+    private var changePasswordCompletion: ((String?) -> Void)?  // Closure to run at completion of change password
+    private let changePasswordTimeout = 8_000                   // change password timeout in milliseconds
+    private var current = 0                                     // current LDAP server from hosts
+    public var home = ""                                        // current active user home
+    public var ldapServers: [String]?                           // static DCs to use instead of looking up via DNS records
 
     // Base configuration prefs
     // change these on the object as needed
@@ -894,7 +897,7 @@ public class NoMADSession : NSObject {
     // Set a minimal com.apple.Kerberos defaults plist
     private func setKerberosDefaults() {
         myLogger.logit(.debug, message: "Set Kerberos defaults")
-        let kerberosDefaults = UserDefaults(suiteName: kerberosDefaultsSuite)
+        let kerberosDefaults = UserDefaults(suiteName: kerberosDefaultsName)
         setLibDefaults(kerberosDefaults: kerberosDefaults)
         removeRealms(kerberosDefaults: kerberosDefaults)
     }
@@ -911,6 +914,31 @@ public class NoMADSession : NSObject {
     private func removeRealms(kerberosDefaults: UserDefaults?) {
         myLogger.logit(.debug, message: "Remove realms dictionary from Kerberos defaults")
         kerberosDefaults?.removeObject(forKey: "realms")
+    }
+
+    // Change Kerberos password when notified that Kerberos defaults are ready
+    @objc private func defaultsDidChange(_ notification: Notification) {
+        let kerberosDefaults = UserDefaults(suiteName: kerberosDefaultsName)
+        let libdefaults = kerberosDefaults?.dictionary(forKey: "libdefaults")
+        let realms = kerberosDefaults?.dictionary(forKey: "realms")
+        if libdefaults?["default_realm"] as? String == kerberosRealm && realms == nil {
+            NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object: nil)
+            myLogger.logit(.debug, message: "Change password")
+            KerbUtil().changeKerberosPassword(oldPass, newPass, userPrincipal) { [weak self] in
+                if let errorValue = $0 {
+                    self?.changePasswordCompletion?(errorValue)
+                } else {
+                    self?.changePasswordCompletion?(nil)
+                }
+                self?.cleanChangePasswordParameters()
+            }
+        }
+    }
+
+    private func cleanChangePasswordParameters() {
+        oldPass = ""
+        newPass = ""
+        changePasswordCompletion = nil
     }
 
     // calculate password complexity
@@ -1096,16 +1124,18 @@ extension NoMADSession: NoMADUserSession {
 
     /// Change the password for the current user session via closure.
     public func changePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
-        // Set Kerberos defaults - otherwise we can get an error
+        oldPass = oldPassword
+        newPass = newPassword
+        changePasswordCompletion = completion
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(defaultsDidChange(_:)),
+                                               name: UserDefaults.didChangeNotification,
+                                               object: nil)
         setKerberosDefaults()
-
-        myLogger.logit(.debug, message: "Change password")
-        KerbUtil().changeKerberosPassword(oldPassword, newPassword, userPrincipal) {
-            if let errorValue = $0 {
-                completion(errorValue)
-            } else {
-                completion(nil)
-            }
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(changePasswordTimeout)) {
+            NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object: nil)
+            completion(NoMADSessionError.timeout.rawValue)
+            self.cleanChangePasswordParameters()
         }
     }
 
