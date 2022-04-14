@@ -48,7 +48,6 @@ public enum NoMADSessionError: String, Error {
     case PasswordExpired = "Password has expired"
     case unknownPrincipal
     case wrongRealm = "Wrong realm"
-    case timeout = "Process timed out"
 }
 
 public enum LDAPType {
@@ -69,21 +68,17 @@ public struct NoMADLDAPServer {
 /// A general purpose class that is the main entrypoint for interactions with Active Directory.
 public class NoMADSession: NSObject {
 
-    public var state: NoMADSessionState = .offDomain             // current state of affairs
-    weak public var delegate: NoMADUserSessionDelegate?          // delegate
-    public var site: String = ""                                 // current AD site
-    public var defaultNamingContext: String = ""                 // current default naming context
-    private var hosts = [NoMADLDAPServer]()                      // list of LDAP servers
-    private var resolver = DNSResolver()                         // DNS resolver object
-    private var maxSSF = ""                                      // current security level in place for LDAP lookups
-    private var URIPrefix = "ldap://"                            // LDAP or LDAPS
-    private let kerberosQueueLabel = "com.jamf.connect.kerberos" // For dispatching calls to KerbUtil
-    private let kerberosDefaultsName = "com.apple.Kerberos"      // Kerberos defaults
-    private var changePasswordCompletion: ((String?) -> Void)?   // Closure to run at completion of change password
-    private let changePasswordTimeout = 8_000                    // change password timeout in milliseconds
-    private var current = 0                                      // current LDAP server from hosts
-    public var home = ""                                         // current active user home
-    public var ldapServers: [String]?                            // static DCs to use instead of looking up via DNS records
+    public var state: NoMADSessionState = .offDomain          // current state of affairs
+    weak public var delegate: NoMADUserSessionDelegate?       // delegate
+    public var site: String = ""                              // current AD site
+    public var defaultNamingContext: String = ""              // current default naming context
+    private var hosts = [NoMADLDAPServer]()                   // list of LDAP servers
+    private var resolver = DNSResolver()                      // DNS resolver object
+    private var maxSSF = ""                                   // current security level in place for LDAP lookups
+    private var URIPrefix = "ldap://"                         // LDAP or LDAPS
+    private var current = 0                                   // current LDAP server from hosts
+    public var home = ""                                      // current active user home
+    public var ldapServers: [String]?                         // static DCs to use instead of looking up via DNS records
 
     // Base configuration prefs
     // change these on the object as needed
@@ -111,7 +106,6 @@ public class NoMADSession: NSObject {
     public var userPass: String = ""                // for auth
     public var oldPass: String = ""                 // for password changes
     public var newPass: String = ""                 // for password changes
-    private var didCompletePasswordChange = false   // used in gating timeout during password change
     public var customAttributes : [String]?
 
     // conv. init with domain and user
@@ -896,54 +890,61 @@ public class NoMADSession: NSObject {
         return false
     }
 
-    // Set a minimal com.apple.Kerberos defaults plist
-    private func setKerberosDefaults() {
-        myLogger.logit(.debug, message: "Set Kerberos defaults")
-        let kerberosDefaults = UserDefaults(suiteName: kerberosDefaultsName)
-        setLibDefaults(kerberosDefaults: kerberosDefaults)
-        removeRealms(kerberosDefaults: kerberosDefaults)
-    }
+    // MARK: Kerberos preference file needs to be updated:
+    // This function builds new Kerb prefs with KDC included if possible
 
-    // Set libdefaults dictionary to enable Kerberos authentication
-    private func setLibDefaults(kerberosDefaults: UserDefaults?) {
-        myLogger.logit(.debug, message: "Make libDefaults dictionary and write it to Kerberos defaults")
-        var libDefaults = [String: String]()
-        libDefaults["default_realm"] = kerberosRealm
-        kerberosDefaults?.set(libDefaults, forKey: "libdefaults")
-    }
-
-    // Remove realms dictionary to avoid reusing old KDCs
-    private func removeRealms(kerberosDefaults: UserDefaults?) {
-        myLogger.logit(.debug, message: "Remove realms dictionary from Kerberos defaults")
-        kerberosDefaults?.removeObject(forKey: "realms")
-    }
-
-    // Change Kerberos password when notified that Kerberos defaults are ready
-    @objc private func defaultsDidChange(_ notification: Notification) {
-        let kerberosDefaults = UserDefaults(suiteName: kerberosDefaultsName)
-        let libdefaults = kerberosDefaults?.dictionary(forKey: "libdefaults")
-        let realms = kerberosDefaults?.dictionary(forKey: "realms")
-        if libdefaults?["default_realm"] as? String == kerberosRealm && realms == nil {
-            NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object: nil)
-            myLogger.logit(.debug, message: "Change password")
-            DispatchQueue(label: kerberosQueueLabel).async { [weak self] in
-                KerbUtil().changeKerberosPassword(self?.oldPass, self?.newPass, self?.userPrincipal) {
-                    if let errorValue = $0 {
-                        self?.changePasswordCompletion?(errorValue)
-                    } else {
-                        self?.changePasswordCompletion?(nil)
-                    }
-                    self?.didCompletePasswordChange = true
-                    self?.cleanChangePasswordParameters()
-                }
-            }
+    private func checkKpasswdServer() -> Bool {
+        if hosts.isEmpty {
+        myLogger.logit(.debug, message: "Make sure we have LDAP servers")
+            getHosts(domain)
         }
-    }
 
-    private func cleanChangePasswordParameters() {
-        oldPass = ""
-        newPass = ""
-        changePasswordCompletion = nil
+        myLogger.logit(.debug, message: "Searching for kerberos srv records")
+
+        let myKpasswdServers = getSRVRecords(domain, srv_type: "_kpasswd._tcp.")
+        myLogger.logit(.debug, message: "New kpasswd Servers are: " + myKpasswdServers.description)
+        myLogger.logit(.debug, message: "Current Server is: " + currentServer)
+
+        if myKpasswdServers.contains(currentServer) {
+            myLogger.logit(.debug, message: "Found kpasswd server that matches current LDAP server.")
+            myLogger.logit(.debug, message: "Attempting to set kpasswd server to ensure Kerberos and LDAP are in sync.")
+
+            // get the defaults for com.apple.Kerberos
+            let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
+
+            // get the list defaults, or create an empty dictionary if there are none
+            let kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
+
+            // test to see if the domain_defaults key already exists, if not build it
+            if kerbDefaults["default_realm"] != nil {
+                myLogger.logit(.debug, message: "Existing default realm. Skipping adding default realm to Kerberos prefs.")
+            } else {
+                // build a dictionary and add the KDC into it then write it back to defaults
+                let libDefaults = NSMutableDictionary()
+                libDefaults.setValue(kerberosRealm, forKey: "default_realm")
+                kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+            }
+
+            // get the list of domains, or create an empty dictionary if there are none
+            var kerbRealms = kerbPrefs?.dictionary(forKey: "realms")  ?? [String:AnyObject]()
+
+            // test to see if the realm already exists, if not build it
+            if kerbRealms[kerberosRealm] != nil {
+                myLogger.logit(.debug, message: "Existing Kerberos configuration for realm. Skipping adding KDC to Kerberos prefs.")
+                return false
+            } else {
+                // build a dictionary and add the KDC into it then write it back to defaults
+                let realm = NSMutableDictionary()
+                //realm.setValue(myLDAPServers.currentServer, forKey: "kdc")
+                realm.setValue(currentServer, forKey: "kpasswd_server")
+                kerbRealms[kerberosRealm] = realm
+                kerbPrefs?.set(kerbRealms, forKey: "realms")
+                return true
+            }
+        } else {
+            myLogger.logit(LogLevel.base, message: "Couldn't find kpasswd server that matches current LDAP server. Letting system chose.")
+            return false
+        }
     }
 
     // calculate password complexity
@@ -994,6 +995,63 @@ public class NoMADSession: NSObject {
             }
         }
     }
+
+    // Remove a default realm from the Kerb pref file
+
+    fileprivate func cleanKerbPrefs(clearLibDefaults: Bool=false) {
+
+        // get the defaults for com.apple.Kerberos
+
+        let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
+
+        // get the list of domains, or create an empty dictionary if there are none
+
+        var kerbRealms = kerbPrefs?.dictionary(forKey: "realms")  ?? [String:AnyObject]()
+
+        // test to see if the realm already exists, if it's already gone we are good
+
+        if kerbRealms[kerberosRealm] == nil {
+            myLogger.logit(.debug, message: "No realm in com.apple.Kerberos defaults.")
+        } else {
+            myLogger.logit(.debug, message: "Removing realm from Kerberos Preferences.")
+            // remove the realm from the realms list
+            kerbRealms.removeValue(forKey: kerberosRealm)
+            // save the dictionary back to the pref file
+            kerbPrefs?.set(kerbRealms, forKey: "realms")
+
+            if clearLibDefaults {
+                var libDefaults = kerbPrefs?.dictionary(forKey: "libdefaults")  ?? [String:AnyObject]()
+                libDefaults.removeValue(forKey: "default_realm")
+                kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+            }
+        }
+    }
+
+    // Create a minimal com.apple.Kerberos file so we don't barf on password change
+
+    fileprivate func createBasicKerbPrefs(realm: String?) {
+
+        let realm = realm ?? kerberosRealm
+
+        // get the defaults for com.apple.Kerberos
+
+        let kerbPrefs = UserDefaults.init(suiteName: "com.apple.Kerberos")
+
+        // get the list defaults, or create an empty dictionary if there are none
+
+        let kerbDefaults = kerbPrefs?.dictionary(forKey: "libdefaults") ?? [String:AnyObject]()
+
+        // test to see if the domain_defaults key already exists, if not build it
+
+        if kerbDefaults["default_realm"] != nil {
+            myLogger.logit(.debug, message: "Existing default realm. Skipping adding default realm to Kerberos prefs.")
+        } else {
+            // build a dictionary and add the KDC into it then write it back to defaults
+            let libDefaults = NSMutableDictionary()
+            libDefaults.setValue(realm, forKey: "default_realm")
+            kerbPrefs?.set(libDefaults, forKey: "libdefaults")
+        }
+    }
 }
 
 extension NoMADSession: NoMADUserSession {
@@ -1005,8 +1063,7 @@ extension NoMADSession: NoMADUserSession {
             return
         }
 
-        let kerbUtil = KerbUtil()
-        kerbUtil.getKerberosCredentials(userPass, userPrincipal) { [unowned self] errorValue in
+        KerbUtil().getKerberosCredentials(userPass, userPrincipal) { [unowned self] errorValue in
             self.userPass = ""
             if let errorValue = errorValue {
                 self.state = .kerbError
@@ -1127,34 +1184,24 @@ extension NoMADSession: NoMADUserSession {
         }
     }
 
-    /// Change the password for the current user session via closure.
+    /// Change the password for the current user session via closure
     public func changePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
-        oldPass = oldPassword
-        newPass = newPassword
-        changePasswordCompletion = completion
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(defaultsDidChange(_:)),
-                                               name: UserDefaults.didChangeNotification,
-                                               object: nil)
-        DispatchQueue.main.async {
-            self.setKerberosDefaults()
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(changePasswordTimeout)) {
-            if !self.didCompletePasswordChange {
-                NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object: nil)
-                completion(NoMADSessionError.timeout.rawValue)
-                self.cleanChangePasswordParameters()
+        myLogger.logit(.debug, message: "Change password")
+        KerbUtil().changeKerberosPassword(oldPassword, newPassword, userPrincipal) {
+            if let errorValue = $0 {
+                completion(errorValue)
             } else {
-                self.didCompletePasswordChange = false
+                completion(nil)
             }
         }
     }
 
     /// Change the password for the current user session via delegate.
     public func changePassword() {
-        // set kerb prefs - otherwise we can get an error here if not set
-        setKerberosDefaults()
+        // change user's password
+        // check kerb prefs - otherwise we can get an error here if not set
+        myLogger.logit(.debug, message: "Checking kpassword server.")
+        _ = checkKpasswdServer()
 
         // set up the KerbUtil
         myLogger.logit(.debug, message: "Init KerbUtil.")
@@ -1181,6 +1228,9 @@ extension NoMADSession: NoMADUserSession {
         // scrub the passwords
         oldPass = ""
         newPass = ""
+
+        // clean the kerb prefs so we don't reuse the KDCs
+        cleanKerbPrefs()
     }
 
     public func userInfo() {
