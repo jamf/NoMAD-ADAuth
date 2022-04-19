@@ -63,6 +63,16 @@ public struct NoMADLDAPServer {
     var timeStamp: Date
 }
 
+extension UserDefaults {
+    @objc dynamic var libdefaults: [String: Any]? {
+        dictionary(forKey: "libdefaults")
+    }
+
+    @objc dynamic var realms: [String: Any]? {
+        dictionary(forKey: "realms")
+    }
+}
+
 // MARK: Start of public class
 
 /// A general purpose class that is the main entrypoint for interactions with Active Directory.
@@ -110,12 +120,6 @@ public class NoMADSession: NSObject {
 
     // KVO of Kerberos defaults
     private let kerberosDefaults = UserDefaults(suiteName: "com.apple.Kerberos")
-    @objc dynamic private var kerberosLibdefaults: [String: Any]? {
-        kerberosDefaults?.dictionary(forKey: "libdefaults")
-    }
-    @objc dynamic private var kerberosRealms: [String: Any]? {
-        kerberosDefaults?.dictionary(forKey: "realms")
-    }
     private var kerberosLibdefaultsObservation: NSKeyValueObservation?
     private var kerberosRealmsObservation: NSKeyValueObservation?
 
@@ -1199,11 +1203,11 @@ extension NoMADSession: NoMADUserSession {
     public func changePassword(willRefreshDefaults: Bool, oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
         if willRefreshDefaults {
             myLogger.logit(.debug, message: "Kerberos defaults will refresh")
-            kerberosLibdefaultsObservation = self.observe(\.kerberosLibdefaults) { [weak self] _, _ in
+            kerberosLibdefaultsObservation = kerberosDefaults?.observe(\.libdefaults) { [weak self] _, _ in
                 myLogger.logit(.debug, message: "Kerberos defaults for libdefaults did change")
                 self?.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
             }
-            kerberosRealmsObservation = self.observe(\.kerberosRealms) { [weak self] _, _ in
+            kerberosRealmsObservation = kerberosDefaults?.observe(\.realms) { [weak self] _, _ in
                 myLogger.logit(.debug, message: "Kerberos defaults for realms did change")
                 self?.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
             }
