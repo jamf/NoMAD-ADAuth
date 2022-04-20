@@ -63,15 +63,20 @@ public struct NoMADLDAPServer {
     var timeStamp: Date
 }
 
-//extension UserDefaults {
-//    @objc dynamic var libdefaults: [String: Any]? {
-//        dictionary(forKey: "libdefaults")
-//    }
-//
-//    @objc dynamic var realms: [String: Any]? {
-//        dictionary(forKey: "realms")
-//    }
-//}
+public enum KerberosKey: String {
+    case libdefaults
+    case realms
+}
+
+extension UserDefaults {
+    @objc dynamic var libdefaults: [String: String]? {
+        dictionary(forKey: KerberosKey.libdefaults.rawValue) as? [String: String]
+    }
+
+    @objc dynamic var realms: [String: [String: String]]? {
+        dictionary(forKey: KerberosKey.realms.rawValue) as? [String: [String: String]]
+    }
+}
 
 // MARK: Start of public class
 
@@ -116,11 +121,10 @@ public class NoMADSession: NSObject {
     public var userPass: String = ""                // for auth
     public var oldPass: String = ""                 // for password changes
     public var newPass: String = ""                 // for password changes
-//!    private var changePasswordCompletion: ((String?) -> Void)?
     public var customAttributes : [String]?
 
     // KVO of Kerberos defaults
-    private let kerberosDefaults = UserDefaults(suiteName: "com.apple.Kerberos")
+    @objc private var kerberosDefaults = UserDefaults(suiteName: "com.apple.Kerberos")
     private var kerberosLibdefaultsObservation: NSKeyValueObservation?
     private var kerberosRealmsObservation: NSKeyValueObservation?
 
@@ -1202,59 +1206,43 @@ extension NoMADSession: NoMADUserSession {
 
     /// Change the password for the current user session via closure
     public func changePassword(willRefreshDefaults: Bool, oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
-//!        oldPass = oldPassword
-//        newPass = newPassword
-//        changePasswordCompletion = completion
-
-//        if willRefreshDefaults {
-//            myLogger.logit(.debug, message: "Kerberos defaults will refresh")
-
-//!            NotificationCenter.default.addObserver(self,
-//                                                   selector: #selector(handleKerberosDefaultsNotification(_:)),
-//                                                   name: UserDefaults.didChangeNotification,
-//                                                   object: nil)
-
-//            kerberosLibdefaultsObservation = kerberosDefaults?.observe(\.libdefaults, options: [.old, .new]) { _, _ in
-//                myLogger.logit(.debug, message: "Kerberos defaults for libdefaults did change")
-//                self.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
-//            }
-//            kerberosRealmsObservation = kerberosDefaults?.observe(\.realms, options: [.old, .new]) { _, _ in
-//                myLogger.logit(.debug, message: "Kerberos defaults for realms did change")
-//                self.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
-//            }
-
-//        } else {
-//!            changeKerberosPassword()
+        if willRefreshDefaults {
+            myLogger.logit(.debug, message: "Kerberos defaults will refresh")
+            kerberosLibdefaultsObservation = observe(\.kerberosDefaults?.libdefaults, options: [.old, .new]) { _, _ in
+                myLogger.logit(.debug, message: "Kerberos defaults for libdefaults did change")
+                self.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
+            }
+            kerberosRealmsObservation = observe(\.kerberosDefaults?.realms, options: [.old, .new]) { _, _ in
+                myLogger.logit(.debug, message: "Kerberos defaults for realms did change")
+                self.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
+            }
+        } else {
             changeKerberosPassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
-//        }
+        }
     }
 
-//!    @objc private func handleKerberosDefaultsNotification(_ notification: Notification) {
-//        myLogger.logit(.debug, message: "Kerberos defaults did change")
-//        if didRefreshKerberosDefaults() {
-//            myLogger.logit(.debug, message: "Kerberos defaults are ready")
-//            NotificationCenter.default.removeObserver(self, name: UserDefaults.didChangeNotification, object: nil)
-//            changeKerberosPassword()
-//        }
-//    }
+    private func requestChangePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
+        if didRefreshKerberosDefaults() {
+            myLogger.logit(.debug, message: "Kerberos defaults are ready")
+            kerberosLibdefaultsObservation?.invalidate()
+            kerberosRealmsObservation?.invalidate()
+            changeKerberosPassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
+        }
+    }
 
-//    private func requestChangePassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
-//        myLogger.logit(.debug, message: "Kerberos defaults did change")
-//        if didRefreshKerberosDefaults() {
-//            myLogger.logit(.debug, message: "Kerberos defaults are ready")
-//            kerberosLibdefaultsObservation?.invalidate()
-//            kerberosRealmsObservation?.invalidate()
-//            changeKerberosPassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
-//        }
-//    }
-
-//    private func didRefreshKerberosDefaults() -> Bool {
-//        myLogger.logit(.debug, message: "Check if Kerberos defaults are ready")
-//        let libdefaults = kerberosDefaults?.dictionary(forKey: "libdefaults")
-//        let realms = kerberosDefaults?.dictionary(forKey: "realms")
-//        let didRefreshDefaults = libdefaults?["default_realm"] as? String == kerberosRealm && realms == nil
-//        return didRefreshDefaults
-//    }
+    private func didRefreshKerberosDefaults() -> Bool {
+        myLogger.logit(.debug, message: "Check if Kerberos defaults are ready")
+        let libdefaults = kerberosDefaults?.dictionary(forKey: KerberosKey.libdefaults.rawValue)
+        let isLibdefaultsReady = libdefaults?["default_realm"] as? String == kerberosRealm
+        let realms = kerberosDefaults?.dictionary(forKey: KerberosKey.realms.rawValue)
+        var isRealmsReady: Bool
+        if let realms = realms, !realms.isEmpty {
+            isRealmsReady = false
+        } else {
+            isRealmsReady = true
+        }
+        return isLibdefaultsReady && isRealmsReady
+    }
 
     private func changeKerberosPassword(oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
         myLogger.logit(.debug, message: "Change Kerberos password")
@@ -1264,9 +1252,6 @@ extension NoMADSession: NoMADUserSession {
             } else {
                 completion(nil)
             }
-//            self.oldPass = ""
-//            self.newPass = ""
-//            self.changePasswordCompletion = nil
         }
     }
 
