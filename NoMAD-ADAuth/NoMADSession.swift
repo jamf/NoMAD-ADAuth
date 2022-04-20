@@ -1221,8 +1221,6 @@ extension NoMADSession: NoMADUserSession {
             myLogger.logit(.debug, message: "Kerberos defaults are ready")
             kerberosLibdefaultsObservation?.invalidate()
             kerberosRealmsObservation?.invalidate()
-            kerberosLibdefaultsObservation = nil
-            kerberosRealmsObservation = nil
             changeKerberosPassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
         }
     }
