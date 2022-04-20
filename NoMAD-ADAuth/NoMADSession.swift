@@ -1203,13 +1203,13 @@ extension NoMADSession: NoMADUserSession {
     public func changePassword(willRefreshDefaults: Bool, oldPassword: String, newPassword: String, completion: @escaping (String?) -> Void) {
         if willRefreshDefaults {
             myLogger.logit(.debug, message: "Kerberos defaults will refresh")
-            kerberosLibdefaultsObservation = kerberosDefaults?.observe(\.libdefaults) { [weak self] _, _ in
+            kerberosLibdefaultsObservation = kerberosDefaults?.observe(\.libdefaults, options: [.old, .new]) { _, _ in
                 myLogger.logit(.debug, message: "Kerberos defaults for libdefaults did change")
-                self?.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
+                self.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
             }
-            kerberosRealmsObservation = kerberosDefaults?.observe(\.realms) { [weak self] _, _ in
+            kerberosRealmsObservation = kerberosDefaults?.observe(\.realms, options: [.old, .new]) { _, _ in
                 myLogger.logit(.debug, message: "Kerberos defaults for realms did change")
-                self?.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
+                self.requestChangePassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
             }
         } else {
             changeKerberosPassword(oldPassword: oldPassword, newPassword: newPassword, completion: completion)
