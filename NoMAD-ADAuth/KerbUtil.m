@@ -233,7 +233,7 @@ extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* passwor
         }
     }
     else {
-        NSLog(@"Keychain change password error.");
+        NSLog(@"Keychain change error.");
         return 0;
     }
 }
