@@ -4,6 +4,7 @@ Congratulations, you're about to experience the blood, sweat and tears of the th
 
 This framework is written primarily in Swift 4.2 on Xcode 10 and while much of the functionality is working, it should be considered beta at this point.
 
+[![Xcode - Build and Analyze](https://github.com/jamf/NoMAD-ADAuth/actions/workflows/objective-c-xcode.yml/badge.svg)](https://github.com/jamf/NoMAD-ADAuth/actions/workflows/objective-c-xcode.yml)
 ## Overview
 
 The NoMAD AD Authentication Framework allows you to present a username and password to the Framework and have it get tickets for the user and then lookup the user's information in AD. In addition the framework is:
