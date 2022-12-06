@@ -171,11 +171,13 @@ public class KlistUtil {
                 tickets[tick.value.principal] = tick.value
             }
         }
-        //print(tickets)
     }
 
     public func hasTickets(principal: String) -> Bool {
-        tickets.keys.sorted().map { $0.lowercased() }.contains(principal.lowercased())
+        klist()
+        return tickets.keys
+            .map { $0.lowercased() }
+            .contains(principal.lowercased())
     }
 
     // function to delete a kerb ticket
