@@ -616,8 +616,7 @@ public class NoMADSession: NSObject {
         var userHome = ""
         
         if ldaptype == .AD {
-            
-        var attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn", "msDS-ResultantPSO", "msDS-PrincipalName"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
+            var attributes = ["pwdLastSet", "msDS-UserPasswordExpiryTimeComputed", "userAccountControl", "homeDirectory", "displayName", "memberOf", "mail", "userPrincipalName", "dn", "givenName", "sn", "cn", "msDS-ResultantPSO", "msDS-PrincipalName"] // passwordSetDate, computedExpireDateRaw, userPasswordUACFlag, userHomeTemp, userDisplayName, groupTemp
             
             if customAttributes?.count ?? 0 > 0 {
                 attributes.append(contentsOf: customAttributes!)
@@ -895,7 +894,7 @@ public class NoMADSession: NSObject {
 
     private func checkKpasswdServer() -> Bool {
         if hosts.isEmpty {
-        myLogger.logit(.debug, message: "Make sure we have LDAP servers")
+            myLogger.logit(.debug, message: "Make sure we have LDAP servers")
             getHosts(domain)
         }
 
@@ -1059,6 +1058,7 @@ extension NoMADSession: NoMADUserSession {
     public func getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void) {
         // Check if system already has tickets
         if let principal = principal, klistUtil.hasTickets(principal: principal) {
+            state = .success
             shareKerberosResult(completion: completion)
             return
         }
