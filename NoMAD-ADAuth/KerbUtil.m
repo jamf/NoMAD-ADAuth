@@ -13,6 +13,7 @@
 #import <Security/Security.h>
 #import <DirectoryService/DirectoryService.h>
 #import <OpenDirectory/OpenDirectory.h>
+#import <Kerberos/KerberosLogin.h>
 
 @interface KerbUtil ()
 
@@ -240,6 +241,24 @@ extern OSStatus SecKeychainResetLogin(UInt32 passwordLength, const void* passwor
 
 - (OSStatus)resetKeychain:(NSString *)password {
     return SecKeychainResetLogin((UInt32)password.length, [password UTF8String], YES);
+}
+
+- (void)kSwitch:(const char *)principalName {
+    KLPrincipal principal = NULL;
+    int err = 0;
+
+    err = KLCreatePrincipalFromString(principalName, kerberosVersion_V5, &principal);
+    NSLog(@"Error while creating KLPrincipal for '%s'", principalName);
+
+    /* Use the provided principal to set the system default */
+    if (!err) {
+        err = KLSetSystemDefaultCache (principal);
+        NSLog(@"error while setting the cache for principal '%s' to the system default", principalName);
+    }
+
+    if (principal) {
+        KLDisposePrincipal (principal);
+    }
 }
 
 @end

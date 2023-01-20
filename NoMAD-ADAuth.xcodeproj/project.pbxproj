@@ -78,7 +78,6 @@
 		1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteManager.swift; sourceTree = "<group>"; };
 		1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpirationManager.swift; sourceTree = "<group>"; };
-		5BA6B18024AACE8500EE3D93 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		9C00CCFD1FD5B8E900B5B36A /* SessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -108,7 +107,6 @@
 		1A10FCB31FAEA7B200D30727 = {
 			isa = PBXGroup;
 			children = (
-				5BA6B18024AACE8500EE3D93 /* Package.swift */,
 				1AB3EF0A1FB689A2002D5F99 /* README.md */,
 				1A10FCBF1FAEA7B300D30727 /* NoMAD-ADAuth */,
 				1A10FCCA1FAEA7B300D30727 /* NoMAD-ADAuthTests */,
