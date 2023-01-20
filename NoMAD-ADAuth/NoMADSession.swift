@@ -1080,9 +1080,6 @@ extension NoMADSession: NoMADUserSession {
                 }
                 completion(.failure(sessionError))
             } else {
-                if let principal {
-                    klistUtil.kswitch(princ: principal)
-                }
                 self.processKerberosResult(completion: completion)
             }
         }
