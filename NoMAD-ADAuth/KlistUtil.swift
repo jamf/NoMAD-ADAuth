@@ -9,6 +9,7 @@
 import Foundation
 import GSS
 import NoMADPRIVATE
+import KerberosCommands
 
 // Class to parse klist -v --json and return all tickets and times
 
@@ -214,6 +215,6 @@ public class KlistUtil {
         myLogger.logit(.debug, message: "Switching ticket for: " + princ)
         // update this for GSSAPI when the functionality is there
 
-        KerbUtil().kSwitch(name)
+        KerberosCommand.kSwitch(name)
     }
 }

@@ -1,1 +1,4 @@
-NoMAD-ADAuth.xcodeproj/project.xcworkspace/xcuserdata/
+**/xcuserdata
+
+.DS_Store
+.swiftpm

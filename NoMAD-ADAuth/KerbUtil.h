@@ -28,7 +28,6 @@ extern OSStatus SecKeychainItemSetAccessWithPassword(SecKeychainItemRef item, Se
 - (int)checkPassword:(NSString *)myPassword;
 - (int)changeKeychainPassword:(NSString *)oldPassword :(NSString *)newPassword;
 - (OSStatus)resetKeychain:(NSString *)password;
-- (void)kSwitch:(const char *)principalName;
 
 @end
 
