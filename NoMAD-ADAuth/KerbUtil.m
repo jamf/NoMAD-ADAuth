@@ -16,7 +16,7 @@
 
 @interface KerbUtil ()
 
-@property (nonatomic, assign, readwrite) BOOL				finished;
+@property (nonatomic, assign, readwrite) BOOL finished;
 
 @end
 

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 48;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -31,6 +31,8 @@
 		1AB3EF771FB6A302002D5F99 /* SiteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */; };
 		1AB3EF7B1FB6A3AB002D5F99 /* SessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */; };
 		1AB3EF7D1FB6A476002D5F99 /* ExpirationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */; };
+		2ABB3C452981626B001B4056 /* KerberosCommands in Resources */ = {isa = PBXBuildFile; fileRef = 2ABB3C442981626B001B4056 /* KerberosCommands */; };
+		2ABB3C492981628F001B4056 /* KerberosCommands in Frameworks */ = {isa = PBXBuildFile; productRef = 2ABB3C482981628F001B4056 /* KerberosCommands */; };
 		9C00CCFE1FD5B8E900B5B36A /* SessionManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C00CCFD1FD5B8E900B5B36A /* SessionManagerTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -78,7 +80,7 @@
 		1AB3EF761FB6A2FE002D5F99 /* SiteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SiteManager.swift; sourceTree = "<group>"; };
 		1AB3EF7A1FB6A3AB002D5F99 /* SessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManager.swift; sourceTree = "<group>"; };
 		1AB3EF7C1FB6A476002D5F99 /* ExpirationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpirationManager.swift; sourceTree = "<group>"; };
-		5BA6B18024AACE8500EE3D93 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		2ABB3C442981626B001B4056 /* KerberosCommands */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = KerberosCommands; sourceTree = "<group>"; };
 		9C00CCFD1FD5B8E900B5B36A /* SessionManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionManagerTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -91,6 +93,7 @@
 				1AB3EF5F1FB69637002D5F99 /* GSS.framework in Frameworks */,
 				1AB3EF601FB6963B002D5F99 /* libresolv.tbd in Frameworks */,
 				1AB3EF611FB6963D002D5F99 /* Kerberos.framework in Frameworks */,
+				2ABB3C492981628F001B4056 /* KerberosCommands in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,7 +111,6 @@
 		1A10FCB31FAEA7B200D30727 = {
 			isa = PBXGroup;
 			children = (
-				5BA6B18024AACE8500EE3D93 /* Package.swift */,
 				1AB3EF0A1FB689A2002D5F99 /* README.md */,
 				1A10FCBF1FAEA7B300D30727 /* NoMAD-ADAuth */,
 				1A10FCCA1FAEA7B300D30727 /* NoMAD-ADAuthTests */,
@@ -177,6 +179,7 @@
 		1AB3EEF61FB688AD002D5F99 /* Kerberos */ = {
 			isa = PBXGroup;
 			children = (
+				2ABB3C442981626B001B4056 /* KerberosCommands */,
 				1AB3EEFB1FB688CB002D5F99 /* krb5.h */,
 				1AB3EEF81FB688CB002D5F99 /* KlistUtil.swift */,
 				1AB3EEFA1FB688CB002D5F99 /* GSSItem.h */,
@@ -258,6 +261,9 @@
 			dependencies = (
 			);
 			name = "NoMAD-ADAuth";
+			packageProductDependencies = (
+				2ABB3C482981628F001B4056 /* KerberosCommands */,
+			);
 			productName = "NoMAD-ADAuth";
 			productReference = 1A10FCBD1FAEA7B300D30727 /* NoMAD_ADAuth.framework */;
 			productType = "com.apple.product-type.framework";
@@ -325,6 +331,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2ABB3C452981626B001B4056 /* KerberosCommands in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -495,7 +502,8 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
-				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -518,7 +526,11 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "NoMAD-ADAuth/Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
@@ -551,7 +563,11 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "NoMAD-ADAuth/Info.plist";
 				INSTALL_PATH = "@executable_path/../Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
@@ -576,7 +592,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VRPY9KHGX6;
 				INFOPLIST_FILE = "NoMAD-ADAuthTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuthTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -592,7 +612,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VRPY9KHGX6;
 				INFOPLIST_FILE = "NoMAD-ADAuthTests/Info.plist";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = "menu.nomad.NoMAD-ADAuthTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
@@ -630,6 +654,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2ABB3C482981628F001B4056 /* KerberosCommands */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = KerberosCommands;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1A10FCB41FAEA7B200D30727 /* Project object */;
 }

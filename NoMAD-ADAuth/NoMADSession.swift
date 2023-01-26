@@ -1054,7 +1054,7 @@ public class NoMADSession: NSObject {
 }
 
 extension NoMADSession: NoMADUserSession {
-
+    /// Don't call this function on a UI update thread because it may block on network activity.
     public func getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void) {
         // Check if system already has tickets
         if let principal = principal, klistUtil.hasTickets(principal: principal) {
