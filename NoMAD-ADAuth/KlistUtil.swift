@@ -9,7 +9,6 @@
 import Foundation
 import GSS
 import NoMADPRIVATE
-import KerberosCommands
 
 // Class to parse klist -v --json and return all tickets and times
 
@@ -203,18 +202,29 @@ public class KlistUtil {
     }
     
     // function to switch the default cache
+    
     public func kswitch(princ: String = "" ) {
+        
         var name = ""
-
-        if princ.isEmpty, let defaultPrincipal {
-            name = defaultPrincipal
+        var p : krb5_principal? = nil
+        var cache: krb5_ccache? = nil
+        
+        if princ == "" {
+            name = defaultPrincipal!
         } else {
             name = princ
         }
-
+        
+        var nameInt = Int8(name)
+        
         myLogger.logit(.debug, message: "Switching ticket for: " + princ)
         // update this for GSSAPI when the functionality is there
-
-        KerberosCommand.kSwitch(name)
+        
+        var context: krb5_context? = nil
+        krb5_init_secure_context(&context)
+        
+        krb5_parse_name(context!, &nameInt!, &p)
+        krb5_cc_cache_match(context, p, &cache)
+        // krb5_cc_set_default_name
     }
 }
