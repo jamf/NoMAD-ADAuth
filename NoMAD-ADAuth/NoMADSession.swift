@@ -1058,7 +1058,6 @@ extension NoMADSession: NoMADUserSession {
     public func getKerberosTicket(principal: String? = nil, completion: @escaping (KerberosTicketResult) -> Void) {
         // Check if system already has tickets
         if let principal = principal, klistUtil.hasTickets(principal: principal) {
-            state = .success
             shareKerberosResult(completion: completion)
             return
         }
