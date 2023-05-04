@@ -1,12 +1,6 @@
-//
-//  Package.swift
-//  NoMAD-ADAuth
-//
-//  Created by Josh Wisenbaker on 5/4/23.
-//  Copyright © 2023 Orchard & Grove Inc. All rights reserved.
-//
-
 // swift-tools-version:5.7
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
 import PackageDescription
 
 let package = Package(
