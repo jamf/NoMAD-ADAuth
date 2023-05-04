@@ -6,7 +6,7 @@
 //  Copyright © 2016 Orchard & Grove Inc. All rights reserved.
 //
 
-#import "KerbUtil.h"
+#import "include/KerbUtil.h"
 #import <GSS/GSS.h>
 #import <krb5/krb5.h>
 #import <Cocoa/Cocoa.h>

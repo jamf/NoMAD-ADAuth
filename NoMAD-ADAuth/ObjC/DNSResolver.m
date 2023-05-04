@@ -6,7 +6,7 @@
 //  Copyright © 2016 Orchard & Grove Inc. All rights reserved.
 //
 
-#import "DNSResolver.h"
+#import "include/DNSResolver.h"
 
 #include <dns_util.h>
 #include <net/if.h>

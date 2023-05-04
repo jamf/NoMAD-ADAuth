@@ -7,11 +7,11 @@ module NoMADPRIVATE {
     //link "CommonCrypto"
 
     // DNS Tools
-    header "DNSResolver.h"
+    header "ObjC/include/DNSResolver.h"
     
     // Kerb bits
-    header "KerbUtil.h"
-    header "GSSItem.h"
-    header "krb5.h"
+    header "ObjC/include/KerbUtil.h"
+    header "ObjC/include/GSSItem.h"
+    header "ObjC/include/krb5.h"
     export *
 }
