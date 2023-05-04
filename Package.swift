@@ -6,7 +6,7 @@
 //  Copyright © 2023 Orchard & Grove Inc. All rights reserved.
 //
 
-// swift-tools-version:5.7
+swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
