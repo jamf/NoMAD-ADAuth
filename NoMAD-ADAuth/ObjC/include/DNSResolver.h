@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <dns_sd.h>
+#include <dns_util.h>
 
 @protocol DNSResolverDelegate;
 

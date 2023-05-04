@@ -8,7 +8,7 @@
 
 #import "include/DNSResolver.h"
 
-#include <dns_util.h>
+//#include <dns_util.h>
 #include <net/if.h>
 
 @interface DNSResolver ()
